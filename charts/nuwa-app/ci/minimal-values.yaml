@@ -1,0 +1,6 @@
+# The least an app has to say.
+name: echo
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/echo
+  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000

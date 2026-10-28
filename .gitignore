@@ -1,0 +1,7 @@
+# packaged charts
+*.tgz
+# rendered output from scripts/check.sh
+/out/
+.env
+.idea/
+.vscode/

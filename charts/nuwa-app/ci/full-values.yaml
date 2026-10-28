@@ -1,0 +1,23 @@
+# Every option in use.
+name: echo
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/echo
+  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+  tag: 3f2c1ab
+replicas: 2
+port: 9000
+command: [python]
+args: [-m, echo]
+env:
+  LOG_LEVEL: info
+persistence:
+  - name: data
+    mountPath: /data
+    size: 1Gi
+  - name: archive
+    mountPath: /archive
+    size: 10Gi
+    storageClass: hdd
+otel:
+  endpoint: http://openobserve.example:5081/api/default

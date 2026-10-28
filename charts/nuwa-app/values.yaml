@@ -1,0 +1,58 @@
+# Every Meru app is one deploy/values.yaml against this chart. values.schema.json rejects typos and missing fields.
+
+# Who the app is - these become the CMDB labels every resource carries.
+name: "" # required; app.kubernetes.io/name, also the resource names
+owner: "" # required; meru.clockmost.com/owner (a person or team)
+partOf: meru # app.kubernetes.io/part-of
+
+image:
+  repository: "" # required, e.g. zot.clockmost.com/meru/echo
+  digest: "" # required, sha256:... - what actually runs
+  tag: "" # optional, shown next to the digest for humans (the commit SHA)
+
+replicas: 1
+
+# The port the app listens on. The Service exposes it as port 80.
+port: 8080
+
+# Every app answers GET /heartbeat with 200 when it can serve. Startup gets longer grace than liveness.
+heartbeat:
+  path: /heartbeat
+  periodSeconds: 10
+  timeoutSeconds: 2
+  failureThreshold: 3
+  startupFailureThreshold: 30
+
+command: []
+args: []
+
+# Plain settings, name -> value. Secrets never go here (they come from Infisical at rollout).
+env: {}
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 128Mi
+
+# The image must run as a numeric non-root user; this is the one Kubernetes enforces.
+runAsUser: 10001
+
+# Writable scratch at /tmp - the root filesystem is read-only.
+tmp:
+  enabled: true
+  sizeLimit: 64Mi
+
+# Persistent volumes. storageClass: local (SSD, default) or hdd. Any volume switches rollouts to Recreate.
+persistence: []
+#  - name: data
+#    mountPath: /data
+#    size: 1Gi
+#    storageClass: local
+
+# Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its
+# OpenObserve credentials (Infisical).
+otel:
+  enabled: true
+  endpoint: ""

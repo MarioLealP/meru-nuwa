@@ -1,0 +1,16 @@
+{{- range .Values.persistence }}
+---
+# Volumes outlive the app: the storage class keeps the data (Retain) and Charon moves it to retention.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $.Values.name }}-{{ .name }}
+  labels:
+    {{- include "nuwa-app.labels" $ | nindent 4 }}
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: {{ .storageClass | default "local" }}
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}
