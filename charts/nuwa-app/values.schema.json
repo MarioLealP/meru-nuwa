@@ -29,6 +29,7 @@
       "additionalProperties": false,
       "properties": {
         "path": { "type": "string", "pattern": "^/" },
+        "readyPath": { "type": "string", "pattern": "^(/.*)?$" },
         "periodSeconds": { "type": "integer", "minimum": 1 },
         "timeoutSeconds": { "type": "integer", "minimum": 1 },
         "failureThreshold": { "type": "integer", "minimum": 1 },
@@ -37,10 +38,19 @@
     },
     "command": { "type": "array", "items": { "type": "string" } },
     "args": { "type": "array", "items": { "type": "string" } },
-    "env": {
+    "env": { "$ref": "#/definitions/env" },
+    "secretEnv": { "$ref": "#/definitions/secretEnv" },
+    "migrate": {
       "type": "object",
-      "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
-      "additionalProperties": { "type": "string" }
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "command": { "type": "array", "items": { "type": "string" } },
+        "args": { "type": "array", "items": { "type": "string" } },
+        "env": { "$ref": "#/definitions/env" },
+        "secretEnv": { "$ref": "#/definitions/secretEnv" },
+        "timeoutSeconds": { "type": "integer", "minimum": 30 }
+      }
     },
     "resources": {
       "type": "object",
@@ -99,5 +109,25 @@
       }
     },
     "global": { "type": "object" }
+  },
+  "definitions": {
+    "env": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+      "additionalProperties": { "type": "string" }
+    },
+    "secretEnv": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["secret", "key"],
+        "properties": {
+          "secret": { "type": "string", "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$" },
+          "key": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
   }
 }

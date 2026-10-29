@@ -15,9 +15,10 @@ replicas: 1
 # The port the app listens on. The Service exposes it as port 80.
 port: 8080
 
-# Every app answers GET /heartbeat with 200 when it can serve. Startup gets longer grace than liveness.
+# Every app answers GET /heartbeat with 200 when it's alive. Startup gets longer grace than liveness.
 heartbeat:
   path: /heartbeat
+  readyPath: "" # readiness, when the app has its own "can serve" check (e.g. its database answers); default: path
   periodSeconds: 10
   timeoutSeconds: 2
   failureThreshold: 3
@@ -26,8 +27,25 @@ heartbeat:
 command: []
 args: []
 
-# Plain settings, name -> value. Secrets never go here (they come from Infisical at rollout).
+# Plain settings, name -> value. Secrets never go here.
 env: {}
+
+# Settings from Kubernetes Secrets, name -> {secret, key}. Made by hand for now; Infisical fills them later (D20).
+secretEnv: {}
+#  PGPASSWORD:
+#    secret: myapp-db-runtime
+#    key: password
+
+# Database migrations before every rollout: a Job from the same image, run by Argo CD as a PreSync hook - if it
+# fails, the sync stops and the old version keeps serving. It gets the app's env plus its own; its secretEnv is its
+# own only (migrations usually log in as the schema owner, the app as a lesser role).
+migrate:
+  enabled: false
+  command: []
+  args: []
+  env: {}
+  secretEnv: {}
+  timeoutSeconds: 600
 
 resources:
   requests:
