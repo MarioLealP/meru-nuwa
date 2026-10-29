@@ -1,0 +1,68 @@
+{{- if .Values.migrate.enabled }}
+{{- /*
+Migrations before every rollout: Argo CD runs this Job as a PreSync hook, so the new version only rolls out after
+it succeeds, and a failure stops the sync with the old version still serving. Its pod has its own name label
+(<name>-migrate) so the app's Service never sends it traffic, and the same CMDB labels otherwise (rule 7).
+*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Values.name }}-migrate
+  labels:
+    {{- include "nuwa-app.migrateLabels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation # the last run stays for its logs until the next one
+spec:
+  backoffLimit: 0 # a failed migration is a decision for a person, not a retry loop
+  activeDeadlineSeconds: {{ .Values.migrate.timeoutSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "nuwa-app.migrateLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ .Values.name }}
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: {{ .Values.runAsUser }}
+        runAsGroup: {{ .Values.runAsUser }}
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: migrate
+          image: {{ include "nuwa-app.image" . }}
+          {{- with .Values.migrate.command }}
+          command:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.migrate.args }}
+          args:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            {{- range $key, $value := merge (dict) .Values.migrate.env .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- include "nuwa-app.secretEnv" .Values.migrate.secretEnv | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          {{- if .Values.tmp.enabled }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          {{- end }}
+      {{- if .Values.tmp.enabled }}
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: {{ .Values.tmp.sizeLimit }}
+      {{- end }}
+{{- end }}

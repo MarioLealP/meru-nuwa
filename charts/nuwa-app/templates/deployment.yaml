@@ -59,6 +59,7 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
+            {{- include "nuwa-app.secretEnv" .Values.secretEnv | nindent 12 }}
           # Rule 6: the platform knows when the app is up (startup), alive (liveness) and serving (readiness).
           startupProbe:
             httpGet:
@@ -76,7 +77,7 @@ spec:
             failureThreshold: {{ .Values.heartbeat.failureThreshold }}
           readinessProbe:
             httpGet:
-              path: {{ .Values.heartbeat.path }}
+              path: {{ .Values.heartbeat.readyPath | default .Values.heartbeat.path }}
               port: http
             periodSeconds: {{ .Values.heartbeat.periodSeconds }}
             timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}

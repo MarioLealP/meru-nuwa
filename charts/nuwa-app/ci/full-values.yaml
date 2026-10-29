@@ -11,6 +11,23 @@ command: [python]
 args: [-m, echo]
 env:
   LOG_LEVEL: info
+secretEnv:
+  PGPASSWORD:
+    secret: echo-db-runtime
+    key: password
+heartbeat:
+  readyPath: /ready
+migrate:
+  enabled: true
+  command: [.venv/bin/alembic]
+  args: [upgrade, head]
+  env:
+    LOG_LEVEL: debug
+  secretEnv:
+    PGPASSWORD:
+      secret: echo-db-app
+      key: password
+  timeoutSeconds: 300
 persistence:
   - name: data
     mountPath: /data
