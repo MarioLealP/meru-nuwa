@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.2.1
+
+### Fixed
+- The migration Job no longer names the app's ServiceAccount: on a first install its PreSync hook ran before that
+  account existed, and every pod was refused.
+
 ## nuwa-app 0.2.0
 
 ### Added

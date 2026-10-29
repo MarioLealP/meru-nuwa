@@ -22,7 +22,8 @@ spec:
         {{- include "nuwa-app.migrateLabels" . | nindent 8 }}
     spec:
       restartPolicy: Never
-      serviceAccountName: {{ .Values.name }}
+      # The namespace's default account, not the app's: PreSync runs before the app's ServiceAccount exists on a
+      # first install, and migrations need no Kubernetes identity anyway (no token is mounted).
       automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
