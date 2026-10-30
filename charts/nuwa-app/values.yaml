@@ -15,6 +15,12 @@ replicas: 1 # ignored while autoscaling is on - KEDA owns the count then
 # The port the app listens on. The Service exposes it as port 80.
 port: 8080
 
+# A fixed Service address, for callers outside the cluster that can't use its DNS name (e.g. Gitea's webhook).
+# Only from the static band 10.43.0.2-10.43.0.255 (Kubernetes assigns automatic addresses from the rest, so these
+# never collide); taken: .1 API, .10 DNS, .50 Zot, .60 Shikigami. Empty = Kubernetes picks. Changing it on a live
+# Service means deleting the Service once (the address can't change in place).
+clusterIP: ""
+
 # Every app answers GET /heartbeat with 200 when it's alive. Startup gets longer grace than liveness.
 heartbeat:
   path: /heartbeat
