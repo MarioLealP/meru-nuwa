@@ -10,7 +10,7 @@ image:
   digest: "" # required, sha256:... - what actually runs
   tag: "" # optional, shown next to the digest for humans (the commit SHA)
 
-replicas: 1
+replicas: 1 # ignored while autoscaling is on - KEDA owns the count then
 
 # The port the app listens on. The Service exposes it as port 80.
 port: 8080
@@ -71,6 +71,20 @@ certificate:
   duration: 24h
   renewBefore: 8h
   mountPath: /var/run/meru/tls
+
+# Scale on the app's own backlog with KEDA (D75): KEDA polls GET <path> on the app's Service from inside the cluster
+# (no credentials) and keeps one replica per `targetValue` waiting items, between min and max. The app answers JSON
+# with the number at `valueLocation`, e.g. {"backlog": 12}. Stateless apps only - every replica must be able to take
+# any work.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 4
+  path: /backlog
+  valueLocation: backlog
+  targetValue: 5
+  pollingInterval: 30 # seconds between polls
+  cooldownPeriod: 300 # seconds of no backlog before scaling down to minReplicas
 
 # Database migrations before every rollout: a Job from the same image, run by Argo CD as a PreSync hook - if it
 # fails, the sync stops and the old version keeps serving. It gets the app's env plus its own; its secretEnv is its
