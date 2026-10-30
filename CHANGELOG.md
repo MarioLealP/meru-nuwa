@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.3.0
+
+### Added
+- `externalSecrets`: Secrets the External Secrets Operator fills from OpenBao (`apps/meru/<namespace>/eso/<name>`,
+  every key), owned by their ExternalSecret. With it come the `eso` ServiceAccount (ESO's login, role
+  `meru-<namespace>-eso`) and the `openbao` SecretStore, all in sync-wave -1 so the Deployment waits for them.
+  `openbao.refreshInterval` (default 5m) is how often ESO re-reads.
+- The chart refuses a `migrate.secretEnv` that names one of them: the PreSync migration runs before the Sync phase
+  creates it, so a first install would wait forever.
+
 ## nuwa-app 0.2.1
 
 ### Fixed

@@ -40,6 +40,37 @@
     "args": { "type": "array", "items": { "type": "string" } },
     "env": { "$ref": "#/definitions/env" },
     "secretEnv": { "$ref": "#/definitions/secretEnv" },
+    "externalSecrets": {
+      "description": "Secrets ESO fills from OpenBao (apps/meru/<namespace>/eso/<name>), name -> settings.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "Opaque",
+              "kubernetes.io/basic-auth",
+              "kubernetes.io/dockerconfigjson",
+              "kubernetes.io/ssh-auth",
+              "kubernetes.io/tls"
+            ]
+          }
+        }
+      }
+    },
+    "openbao": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["addr", "refreshInterval", "caCert"],
+      "properties": {
+        "addr": { "type": "string", "pattern": "^https://" },
+        "refreshInterval": { "type": "string", "pattern": "^[0-9]+(s|m|h)$" },
+        "caCert": { "type": "string", "pattern": "BEGIN CERTIFICATE" }
+      }
+    },
     "migrate": {
       "type": "object",
       "additionalProperties": false,

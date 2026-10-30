@@ -30,11 +30,36 @@ args: []
 # Plain settings, name -> value. Secrets never go here.
 env: {}
 
-# Settings from Kubernetes Secrets, name -> {secret, key}. Made by hand for now; Infisical fills them later (D20).
+# Settings from Kubernetes Secrets, name -> {secret, key}: one of externalSecrets below, or one another part makes
+# (CNPG's <db>-app login).
 secretEnv: {}
 #  PGPASSWORD:
 #    secret: myapp-db-runtime
 #    key: password
+
+# Secrets ESO fills from OpenBao (D66), name -> settings. The values live at apps/meru/<namespace>/eso/<name> and
+# every key there becomes a key of the Secret. Shikigami writes them; meru-eso.sh copies existing ones.
+externalSecrets: {}
+#  myapp-db-runtime:
+#    type: kubernetes.io/basic-auth # optional, default Opaque
+
+# Where ESO reads them: OpenBao's Kubernetes login as this namespace's `eso` account, role meru-<namespace>-eso.
+openbao:
+  addr: https://openbao.clockmost.internal:8204
+  refreshInterval: 5m # how often ESO re-reads; a rotation reaches files then, env vars on the next restart
+  caCert: |
+    -----BEGIN CERTIFICATE-----
+    MIIBuDCCAT+gAwIBAgIUdhEX2D6QMvASBtSG0Umvg6/82bUwCgYIKoZIzj0EAwMw
+    HDEaMBgGA1UEAwwRY2xvY2ttb3N0IHJvb3QgQ0EwHhcNMjYxMDA2MTU1MjI0WhcN
+    MzYxMDAzMTU1MjI0WjAcMRowGAYDVQQDDBFjbG9ja21vc3Qgcm9vdCBDQTB2MBAG
+    ByqGSM49AgEGBSuBBAAiA2IABN2sR4GnlMH7p+qg3gcNQdsrIyOCzDJPfpkD4H/q
+    weqXGlXsiibzoiaX3855xGxNBF1nH9vVFjhNzPtvfDjhRgVsMsmTl4poKH0P1NSr
+    aLWd9L0vl4hwRY+i5UDbPWem5aNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8B
+    Af8EBAMCAQYwHQYDVR0OBBYEFMUwLEQ5E7i14+RsAQu6ySK4zFxUMAoGCCqGSM49
+    BAMDA2cAMGQCMCfjfJs7vE8EO+vCmTw2l4QFYuv1TH1YUjFwedPpvjkTxe1jgYVV
+    EEmyXqPSoqB3mgIwMiP0/1G6XFRxMT+hHj16+uOjv6l3nqPuUWomsOQakPF5i51U
+    AwqvzZjfzlr4WU9o
+    -----END CERTIFICATE-----
 
 # Database migrations before every rollout: a Job from the same image, run by Argo CD as a PreSync hook - if it
 # fails, the sync stops and the old version keeps serving. It gets the app's env plus its own; its secretEnv is its
