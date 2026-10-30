@@ -71,6 +71,17 @@
         "caCert": { "type": "string", "pattern": "BEGIN CERTIFICATE" }
       }
     },
+    "certificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "duration", "renewBefore", "mountPath"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "duration": { "type": "string", "pattern": "^[0-9]+(m|h)$" },
+        "renewBefore": { "type": "string", "pattern": "^[0-9]+(m|h)$" },
+        "mountPath": { "type": "string", "pattern": "^/" }
+      }
+    },
     "migrate": {
       "type": "object",
       "additionalProperties": false,

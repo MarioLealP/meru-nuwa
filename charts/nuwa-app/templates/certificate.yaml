@@ -1,0 +1,98 @@
+{{- if .Values.certificate.enabled }}
+{{- $ns := .Release.Namespace }}
+{{- /*
+The app's TLS certificate (D71). cert-manager logs in to OpenBao as this namespace's `certs` account through the
+shared role meru-certs and has pki_meru sign <name>.<ns>.svc - OpenBao refuses any name outside this namespace.
+Account, permission and issuer at wave -2, the certificate at -1: the Deployment waits until it's issued.
+*/}}
+# The identity cert-manager borrows to log in to OpenBao. No pod runs as it; no API token mounted.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: certs
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+automountServiceAccountToken: false
+---
+# cert-manager may ask k3s for a token for `certs` - that one account, nothing else in the namespace.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-manager-certs-token
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+rules:
+  - apiGroups: [""]
+    resources: [serviceaccounts/token]
+    resourceNames: [certs]
+    verbs: [create]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-certs-token
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-certs-token
+subjects:
+  - kind: ServiceAccount
+    name: cert-manager
+    namespace: cert-manager
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: openbao
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
+spec:
+  vault:
+    server: {{ .Values.openbao.addr }}
+    path: pki_meru/sign/meru-ns
+    caBundle: {{ .Values.openbao.caCert | b64enc }}
+    auth:
+      kubernetes:
+        mountPath: /v1/auth/kubernetes
+        role: meru-certs
+        serviceAccountRef:
+          name: certs
+          audiences: [openbao]
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.name }}-tls
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  secretName: {{ .Values.name }}-tls
+  secretTemplate:
+    labels:
+      {{- include "nuwa-app.labels" . | nindent 6 }}
+  dnsNames:
+    - {{ .Values.name }}.{{ $ns }}.svc
+    - {{ .Values.name }}.{{ $ns }}.svc.cluster.local
+  duration: {{ .Values.certificate.duration }}
+  renewBefore: {{ .Values.certificate.renewBefore }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+  usages: [server auth, client auth, digital signature]
+  issuerRef:
+    name: openbao
+    kind: Issuer
+{{- end }}
