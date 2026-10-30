@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.5.0
+
+### Added
+- `autoscaling`: KEDA scales the app on its own backlog (D75). A `ScaledObject` polls `GET <path>` on the app's
+  Service from inside the cluster (KEDA's metrics-api trigger, no credentials) and keeps one replica per
+  `targetValue` waiting items between `minReplicas` and `maxReplicas`. While it's on, the Deployment leaves
+  `replicas` out so Argo CD and KEDA's HPA don't fight over it. Off by default; stateless apps only.
+
 ## nuwa-app 0.4.0
 
 ### Added

@@ -5,7 +5,9 @@ metadata:
   labels:
     {{- include "nuwa-app.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicas }}
+  {{- end }}
   revisionHistoryLimit: 3
   strategy:
     # A volume is ReadWriteOnce on one node: the old pod has to let go before the new one mounts it.

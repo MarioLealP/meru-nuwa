@@ -15,6 +15,13 @@ secretEnv:
   PGPASSWORD:
     secret: echo-db-runtime
     key: password
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  path: /backlog
+  valueLocation: backlog
+  targetValue: 5
 certificate:
   enabled: true
   duration: 12h
