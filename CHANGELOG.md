@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.6.0
+
+### Added
+- `clusterIP`: a fixed Service address from the static band (10.43.0.2-10.43.0.255), for callers outside the
+  cluster that can't resolve its DNS name - first user: Gitea's webhook to Shikigami. Empty (default) = Kubernetes
+  picks, as before.
+
 ## nuwa-app 0.5.0
 
 ### Added

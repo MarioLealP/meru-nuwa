@@ -5,6 +5,9 @@ metadata:
   labels:
     {{- include "nuwa-app.labels" . | nindent 4 }}
 spec:
+  {{- with .Values.clusterIP }}
+  clusterIP: {{ . }}
+  {{- end }}
   selector:
     {{- include "nuwa-app.selectorLabels" . | nindent 4 }}
   ports:
