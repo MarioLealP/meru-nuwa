@@ -15,6 +15,11 @@ secretEnv:
   PGPASSWORD:
     secret: echo-db-runtime
     key: password
+certificate:
+  enabled: true
+  duration: 12h
+  renewBefore: 4h
+  mountPath: /var/run/meru/tls
 externalSecrets:
   echo-db-runtime:
     type: kubernetes.io/basic-auth

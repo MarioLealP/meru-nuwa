@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.4.0
+
+### Added
+- `certificate`: a TLS certificate for the app's in-cluster names (`<name>.<namespace>.svc` and
+  `.svc.cluster.local`), issued by OpenBao's `pki_meru` through cert-manager and renewed before it expires (24h,
+  renewed 8h before by default). Mounted read-only at `/var/run/meru/tls` (`tls.crt`, `tls.key`, `ca.crt`), for
+  mTLS as server and client. With it come the `certs` ServiceAccount, the permission for cert-manager to request
+  its token, and the `openbao` Issuer (role `meru-certs`).
+
+### Changed
+- ESO logs in through the shared role `meru-eso` instead of `meru-<namespace>-eso`: OpenBao fills in the namespace
+  from the login, so a new app needs no OpenBao setup of its own.
+- The `eso` ServiceAccount and the SecretStore moved to sync-wave -2, a wave before the ExternalSecrets: in the same
+  wave the store wasn't ready for the first try.
+
 ## nuwa-app 0.3.0
 
 ### Added

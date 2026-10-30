@@ -90,7 +90,7 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
-          {{- if or .Values.tmp.enabled .Values.persistence }}
+          {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled }}
           volumeMounts:
             {{- if .Values.tmp.enabled }}
             - name: tmp
@@ -100,8 +100,13 @@ spec:
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
             {{- end }}
+            {{- if .Values.certificate.enabled }}
+            - name: tls
+              mountPath: {{ .Values.certificate.mountPath }}
+              readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if or .Values.tmp.enabled .Values.persistence }}
+      {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled }}
       volumes:
         {{- if .Values.tmp.enabled }}
         - name: tmp
@@ -112,5 +117,11 @@ spec:
         - name: {{ .name }}
           persistentVolumeClaim:
             claimName: {{ $.Values.name }}-{{ .name }}
+        {{- end }}
+        {{- if .Values.certificate.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.name }}-tls
+            defaultMode: 0400
         {{- end }}
       {{- end }}

@@ -38,12 +38,13 @@ secretEnv: {}
 #    key: password
 
 # Secrets ESO fills from OpenBao (D66), name -> settings. The values live at apps/meru/<namespace>/eso/<name> and
-# every key there becomes a key of the Secret. Shikigami writes them; meru-eso.sh copies existing ones.
+# every key there becomes a key of the Secret. Shikigami writes them.
 externalSecrets: {}
 #  myapp-db-runtime:
 #    type: kubernetes.io/basic-auth # optional, default Opaque
 
-# Where ESO reads them: OpenBao's Kubernetes login as this namespace's `eso` account, role meru-<namespace>-eso.
+# Where ESO (and cert-manager, for certificate below) log in: OpenBao's Kubernetes login, shared roles meru-eso /
+# meru-certs, which reach this namespace's own paths and names only (D71).
 openbao:
   addr: https://openbao.clockmost.internal:8204
   refreshInterval: 5m # how often ESO re-reads; a rotation reaches files then, env vars on the next restart
@@ -60,6 +61,16 @@ openbao:
     EEmyXqPSoqB3mgIwMiP0/1G6XFRxMT+hHj16+uOjv6l3nqPuUWomsOQakPF5i51U
     AwqvzZjfzlr4WU9o
     -----END CERTIFICATE-----
+
+# A TLS certificate for the app's in-cluster names, <name>.<namespace>.svc and .svc.cluster.local (D71), from
+# OpenBao's pki_meru through cert-manager, which renews it before it expires. Usable as server and as client (mTLS,
+# e.g. to Temporal). Mounted read-only at mountPath: tls.crt, tls.key, ca.crt; a renewal replaces the files in
+# place, so the app re-reads them when it (re)connects.
+certificate:
+  enabled: false
+  duration: 24h
+  renewBefore: 8h
+  mountPath: /var/run/meru/tls
 
 # Database migrations before every rollout: a Job from the same image, run by Argo CD as a PreSync hook - if it
 # fails, the sync stops and the old version keeps serving. It gets the app's env plus its own; its secretEnv is its
