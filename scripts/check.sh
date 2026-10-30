@@ -13,7 +13,9 @@ for values in "$chart"/ci/*-values.yaml; do
   echo "== $case_name"
   helm lint --strict "$chart" -f "$values" --quiet
   helm template "$case_name" "$chart" -n test -f "$values" >"out/$case_name.yaml"
-  kubeconform -strict -summary "out/$case_name.yaml"
+  kubeconform -strict -summary -schema-location default \
+    -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json' \
+    "out/$case_name.yaml"
 done
 
 if [ -n "$policies" ]; then

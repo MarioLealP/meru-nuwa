@@ -15,6 +15,10 @@ secretEnv:
   PGPASSWORD:
     secret: echo-db-runtime
     key: password
+externalSecrets:
+  echo-db-runtime:
+    type: kubernetes.io/basic-auth
+  echo-api-keys: {}
 heartbeat:
   readyPath: /ready
 migrate:
