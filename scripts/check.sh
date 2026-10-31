@@ -18,6 +18,12 @@ for values in "$chart"/ci/*-values.yaml; do
     "out/$case_name.yaml"
 done
 
+echo "== placeholder digest renders nothing that runs the image"
+if grep -nE '^kind: (Deployment|Job|ScaledObject)$' out/placeholder.yaml; then
+  echo "placeholder digest rendered a workload" >&2
+  exit 1
+fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.

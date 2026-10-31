@@ -18,6 +18,14 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{ .Values.image.repository }}{{ with .Values.image.tag }}:{{ . }}{{ end }}@{{ .Values.image.digest }}
 {{- end }}
 
+{{/* Whether CI has built the app yet: until the first build the digest is the template's all-zero placeholder, and
+nothing that runs the image is rendered - Kyverno would refuse it (no signature), and Argo CD would keep retrying that
+revision instead of taking the build's digest commit. Everything else (Service, volumes, secrets, ...) is there from
+the start. */}}
+{{- define "nuwa-app.built" -}}
+{{- if ne .Values.image.digest "sha256:0000000000000000000000000000000000000000000000000000000000000000" }}true{{ end }}
+{{- end }}
+
 {{/* env entries from Secrets: {NAME: {secret, key}} -> valueFrom.secretKeyRef. */}}
 {{- define "nuwa-app.secretEnv" -}}
 {{- range $name, $ref := . }}

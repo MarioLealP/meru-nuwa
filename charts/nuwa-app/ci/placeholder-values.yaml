@@ -1,0 +1,11 @@
+# A repo fresh from the template: CI hasn't built yet, so nothing that runs the image may render (check.sh asserts it).
+name: echo
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/echo
+  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+migrate:
+  enabled: true
+  command: [python, -m, echo.migrate]
+autoscaling:
+  enabled: true

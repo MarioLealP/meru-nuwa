@@ -1,4 +1,4 @@
-{{- if .Values.autoscaling.enabled }}
+{{- if and .Values.autoscaling.enabled (include "nuwa-app.built" .) }}
 {{- with .Values.autoscaling }}
 {{- if gt (int .minReplicas) (int .maxReplicas) }}
 {{- fail "autoscaling.minReplicas is above maxReplicas" }}

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.8.0
+
+### Changed
+- Until CI's first build - the digest still the template's all-zero placeholder - the Deployment, the migration Job
+  and the ScaledObject aren't rendered; the rest of the app (Service, volumes, secrets, ...) is. Before, Kyverno
+  refused the unsigned placeholder pod and Argo CD kept retrying that revision (up to ~1 h of backoff) before it took
+  the build's digest commit - hit on Echo's first template-built deploy. A real digest renders as before.
+
 ## nuwa-app 0.7.0
 
 ### Added
