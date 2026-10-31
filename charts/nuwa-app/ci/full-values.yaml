@@ -31,6 +31,9 @@ certificate:
 openbaoLogin:
   enabled: true
   mountPath: /var/run/meru/openbao
+kubernetesApi:
+  enabled: true
+  mountPath: /var/run/meru/kubernetes
 externalSecrets:
   echo-db-runtime:
     type: kubernetes.io/basic-auth
