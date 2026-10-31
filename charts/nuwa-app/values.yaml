@@ -90,6 +90,14 @@ openbaoLogin:
   enabled: false
   mountPath: /var/run/meru/openbao
 
+# The app's own Kubernetes API token, for an app that reads the cluster itself (Shikigami reads Argo CD Applications,
+# D85) - every other pod has none (automountServiceAccountToken stays false). Mounted read-only at mountPath: `token`,
+# a service-account token for the API server (10 minutes, renewed by the kubelet), and `ca.crt`, the cluster's CA. It
+# can do only what RBAC grants this service account - by default nothing; Meru/meru's rbac/ holds each exact grant.
+kubernetesApi:
+  enabled: false
+  mountPath: /var/run/meru/kubernetes
+
 # Scale on the app's own backlog with KEDA (D75): KEDA polls GET <path> on the app's Service from inside the cluster
 # (no credentials) and keeps one replica per `targetValue` waiting items, between min and max. The app answers JSON
 # with the number at `valueLocation`, e.g. {"backlog": 12}. Stateless apps only - every replica must be able to take

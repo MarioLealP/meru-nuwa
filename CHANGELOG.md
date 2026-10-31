@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.10.0
+
+### Added
+- `kubernetesApi`: the app's own Kubernetes API token, for an app that reads the cluster itself (Shikigami reads Argo
+  CD Applications, D85). Mounts a service-account token for the API server (10 minutes, renewed by the kubelet) and
+  the cluster CA (`kube-root-ca.crt`) read-only at `mountPath`; `automountServiceAccountToken` stays false. It can do
+  only what RBAC grants the app's service account (Meru/meru `rbac/`). Off by default.
+
 ## nuwa-app 0.9.0
 
 ### Added
