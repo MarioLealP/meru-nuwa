@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.7.0
+
+### Added
+- `openbaoLogin`: the app's own OpenBao login, for an app that writes to OpenBao itself (Shikigami, D79). Mounts a
+  service-account token meant for OpenBao only (audience `openbao`, 10 minutes, renewed by the kubelet) and OpenBao's
+  CA (`<name>-openbao-ca` ConfigMap) read-only at `mountPath`. The token opens nothing until OpenBao's admin binds a
+  role to the app's service account. Off by default; everyone else keeps reading through `externalSecrets`.
+
 ## nuwa-app 0.6.0
 
 ### Added

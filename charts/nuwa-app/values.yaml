@@ -78,6 +78,15 @@ certificate:
   renewBefore: 8h
   mountPath: /var/run/meru/tls
 
+# The app's own OpenBao login, for an app that writes to OpenBao itself (Shikigami, D79) - everyone else reads through
+# externalSecrets above. Mounted read-only at mountPath: `token`, a service-account token meant for OpenBao only
+# (audience openbao, 10 minutes, the kubelet swaps in a fresh one before it runs out), and `ca.crt`, OpenBao's CA.
+# The app logs in at <openbao.addr>/v1/auth/kubernetes/login with the role OpenBao's admin bound to this service
+# account; without such a role the token opens nothing.
+openbaoLogin:
+  enabled: false
+  mountPath: /var/run/meru/openbao
+
 # Scale on the app's own backlog with KEDA (D75): KEDA polls GET <path> on the app's Service from inside the cluster
 # (no credentials) and keeps one replica per `targetValue` waiting items, between min and max. The app answers JSON
 # with the number at `valueLocation`, e.g. {"backlog": 12}. Stateless apps only - every replica must be able to take

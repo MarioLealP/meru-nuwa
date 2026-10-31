@@ -28,6 +28,9 @@ certificate:
   duration: 12h
   renewBefore: 4h
   mountPath: /var/run/meru/tls
+openbaoLogin:
+  enabled: true
+  mountPath: /var/run/meru/openbao
 externalSecrets:
   echo-db-runtime:
     type: kubernetes.io/basic-auth
