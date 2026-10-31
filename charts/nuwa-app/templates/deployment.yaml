@@ -1,4 +1,4 @@
-{{- if include "nuwa-app.built" . }}
+{{- if include "nuwa-app.runs" . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "nuwa-app.labels" . | nindent 8 }}
+        {{- include "nuwa-app.podLabels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.name }}
       automountServiceAccountToken: false

@@ -1,0 +1,12 @@
+# A retired app (D84): enabled false - nothing that runs the image may render (check.sh asserts it), the rest does.
+name: echo
+owner: mario
+enabled: false
+image:
+  repository: zot.clockmost.com/meru/echo
+  digest: sha256:5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f
+migrate:
+  enabled: true
+  command: [python, -m, echo.migrate]
+autoscaling:
+  enabled: true
