@@ -1,0 +1,12 @@
+{{- if .Values.openbaoLogin.enabled }}
+# OpenBao's CA for the app's own login (openbaoLogin): mounted next to the token, so the app checks who it talks to.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-openbao-ca
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+data:
+  ca.crt: |
+    {{- .Values.openbao.caCert | nindent 4 }}
+{{- end }}

@@ -76,6 +76,15 @@
         "caCert": { "type": "string", "pattern": "BEGIN CERTIFICATE" }
       }
     },
+    "openbaoLogin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "mountPath"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "mountPath": { "type": "string", "pattern": "^/" }
+      }
+    },
     "autoscaling": {
       "type": "object",
       "additionalProperties": false,

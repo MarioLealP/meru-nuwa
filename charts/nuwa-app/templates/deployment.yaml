@@ -92,7 +92,7 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
-          {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled }}
+          {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled .Values.openbaoLogin.enabled }}
           volumeMounts:
             {{- if .Values.tmp.enabled }}
             - name: tmp
@@ -107,8 +107,13 @@ spec:
               mountPath: {{ .Values.certificate.mountPath }}
               readOnly: true
             {{- end }}
+            {{- if .Values.openbaoLogin.enabled }}
+            - name: openbao
+              mountPath: {{ .Values.openbaoLogin.mountPath }}
+              readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled }}
+      {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled .Values.openbaoLogin.enabled }}
       volumes:
         {{- if .Values.tmp.enabled }}
         - name: tmp
@@ -125,5 +130,20 @@ spec:
           secret:
             secretName: {{ .Values.name }}-tls
             defaultMode: 0400
+        {{- end }}
+        {{- if .Values.openbaoLogin.enabled }}
+        - name: openbao
+          projected:
+            defaultMode: 0400
+            sources:
+              - serviceAccountToken:
+                  audience: openbao
+                  expirationSeconds: 600
+                  path: token
+              - configMap:
+                  name: {{ .Values.name }}-openbao-ca
+                  items:
+                    - key: ca.crt
+                      path: ca.crt
         {{- end }}
       {{- end }}
