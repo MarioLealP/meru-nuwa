@@ -18,9 +18,19 @@ for values in "$chart"/ci/*-values.yaml; do
     "out/$case_name.yaml"
 done
 
-echo "== placeholder digest renders nothing that runs the image"
-if grep -nE '^kind: (Deployment|Job|ScaledObject)$' out/placeholder.yaml; then
-  echo "placeholder digest rendered a workload" >&2
+for case_name in placeholder retired; do
+  echo "== $case_name renders nothing that runs the image"
+  if grep -nE '^kind: (Deployment|Job|ScaledObject)$' "out/$case_name.yaml"; then
+    echo "$case_name rendered a workload" >&2
+    exit 1
+  fi
+done
+echo "== pods carry no chart version (a chart bump alone mustn't restart every app)"
+# once on the Deployment's own labels, never in its pod template
+count=$(helm template full "$chart" -n test -f "$chart/ci/full-values.yaml" --show-only templates/deployment.yaml \
+  | grep -c 'helm.sh/chart' || true)
+if [ "$count" != 1 ]; then
+  echo "helm.sh/chart appears $count times in the Deployment, expected 1 (its own labels only)" >&2
   exit 1
 fi
 

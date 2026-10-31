@@ -4,6 +4,9 @@
 name: "" # required; app.kubernetes.io/name, also the resource names
 owner: "" # required; meru.clockmost.com/owner (a person or team)
 partOf: meru # app.kubernetes.io/part-of
+# false = retired (D84): the workload stops (no Deployment / migration Job / ScaledObject); the rest stays until Charon
+# purges it. Shikigami sets it in the app's last commit before archiving the repo.
+enabled: true
 
 image:
   repository: "" # required, e.g. zot.clockmost.com/meru/echo

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.9.0
+
+### Added
+- `enabled` (default true): false = the app is retired (D84) - the Deployment, migration Job and ScaledObject stop
+  rendering, so the pods go on the next sync; Service, volumes, secrets etc. stay until Charon purges the namespace.
+  Shikigami sets it in the app's last commit before archiving the repo. The same gate as the placeholder digest.
+
+### Changed
+- The pod template's labels are the selector pair + the CMDB labels rule 7 asks of pods (`part-of`, `owner`) - no
+  `helm.sh/chart` / `managed-by`. A chart bump alone no longer changes the pod template, so it no longer restarts
+  every app (seen on Echo's 0.7.0 -> 0.8.0). Moving to 0.9.0 itself restarts each app once (the labels change).
+
 ## nuwa-app 0.8.0
 
 ### Changed
