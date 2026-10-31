@@ -3,7 +3,7 @@ name: echo
 owner: mario
 image:
   repository: zot.clockmost.com/meru/echo
-  digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+  digest: sha256:5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f
   tag: 3f2c1ab
 replicas: 2
 port: 9000

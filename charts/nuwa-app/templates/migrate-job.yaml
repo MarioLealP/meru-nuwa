@@ -1,4 +1,4 @@
-{{- if .Values.migrate.enabled }}
+{{- if and .Values.migrate.enabled (include "nuwa-app.built" .) }}
 {{- /*
 Migrations before every rollout: Argo CD runs this Job as a PreSync hook, so the new version only rolls out after
 it succeeds, and a failure stops the sync with the old version still serving. Its pod has its own name label
