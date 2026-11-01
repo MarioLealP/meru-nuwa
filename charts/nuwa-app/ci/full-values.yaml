@@ -61,3 +61,6 @@ persistence:
     storageClass: hdd
 otel:
   endpoint: http://openobserve.example:5081/api/default
+configMaps:
+  - name: echo-feed
+    mountPath: /data/feed
