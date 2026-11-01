@@ -93,7 +93,7 @@ spec:
             readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
-          {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled }}
+          {{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled }}
           volumeMounts:
             {{- if .Values.tmp.enabled }}
             - name: tmp
@@ -102,6 +102,11 @@ spec:
             {{- range .Values.persistence }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
+            {{- end }}
+            {{- range .Values.configMaps }}
+            - name: cm-{{ .name }}
+              mountPath: {{ .mountPath }}
+              readOnly: true
             {{- end }}
             {{- if .Values.certificate.enabled }}
             - name: tls
@@ -119,7 +124,7 @@ spec:
               readOnly: true
             {{- end }}
           {{- end }}
-      {{- if or .Values.tmp.enabled .Values.persistence .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled }}
+      {{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled }}
       volumes:
         {{- if .Values.tmp.enabled }}
         - name: tmp
@@ -130,6 +135,12 @@ spec:
         - name: {{ .name }}
           persistentVolumeClaim:
             claimName: {{ $.Values.name }}-{{ .name }}
+        {{- end }}
+        {{- range .Values.configMaps }}
+        - name: cm-{{ .name }}
+          configMap:
+            name: {{ .name }}
+            optional: true # made outside the chart; the pod starts before the first one exists
         {{- end }}
         {{- if .Values.certificate.enabled }}
         - name: tls

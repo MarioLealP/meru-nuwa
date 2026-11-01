@@ -181,6 +181,18 @@
         }
       }
     },
+    "configMaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "mountPath"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,50}[a-z0-9])?$" },
+          "mountPath": { "type": "string", "pattern": "^/" }
+        }
+      }
+    },
     "otel": {
       "type": "object",
       "additionalProperties": false,

@@ -145,6 +145,13 @@ persistence: []
 #    size: 1Gi
 #    storageClass: local
 
+# ConfigMaps something outside the chart keeps up to date (e.g. a host job pushing data files), mounted read-only;
+# each key is a file. Optional: the pod starts before the first one exists, and the files appear when it does
+# (kubelet refreshes mounted ConfigMaps within about a minute).
+configMaps: []
+#  - name: atlas-live
+#    mountPath: /data/live
+
 # Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its
 # OpenObserve credentials (Infisical).
 otel:
