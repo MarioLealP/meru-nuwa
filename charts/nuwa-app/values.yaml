@@ -152,6 +152,17 @@ configMaps: []
 #  - name: atlas-live
 #    mountPath: /data/live
 
+# Who may connect to the app (a NetworkPolicy; off = anyone in the cluster). On, only the host side and the
+# namespaces listed get in - other apps' pods and CI jobs don't.
+networkPolicy:
+  enabled: false
+  fromHost: true
+  # The host side: the node itself (the kubelet's probes, from its cni0 address) and Docker's range - Caddy and
+  # Gitea are still compose containers, and the policy sees their container address (Docker rewrites it only
+  # afterwards). Temporary: once they're pods (D24) this becomes "from namespace caddy / gitea".
+  hostAddresses: [10.42.0.1/32, 172.16.0.0/12]
+  fromNamespaces: [] # e.g. [janus] for an app Janus calls
+
 # Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its
 # OpenObserve credentials (Infisical).
 otel:

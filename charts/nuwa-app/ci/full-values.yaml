@@ -64,3 +64,6 @@ otel:
 configMaps:
   - name: echo-feed
     mountPath: /data/feed
+networkPolicy:
+  enabled: true
+  fromNamespaces: [janus, keda]
