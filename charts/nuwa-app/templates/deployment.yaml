@@ -123,8 +123,13 @@ spec:
               mountPath: {{ .Values.kubernetesApi.mountPath }}
               readOnly: true
             {{- end }}
+            {{- if .Values.authentikLogin.enabled }}
+            - name: authentik
+              mountPath: {{ .Values.authentikLogin.mountPath }}
+              readOnly: true
+            {{- end }}
           {{- end }}
-      {{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled }}
+      {{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled .Values.authentikLogin.enabled }}
       volumes:
         {{- if .Values.tmp.enabled }}
         - name: tmp
@@ -162,6 +167,16 @@ spec:
                   items:
                     - key: ca.crt
                       path: ca.crt
+        {{- end }}
+        {{- if .Values.authentikLogin.enabled }}
+        - name: authentik
+          projected:
+            defaultMode: 0400
+            sources:
+              - serviceAccountToken:
+                  audience: authentik
+                  expirationSeconds: 3600
+                  path: token
         {{- end }}
         {{- if .Values.kubernetesApi.enabled }}
         - name: kubernetes-api

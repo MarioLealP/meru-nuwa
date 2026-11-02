@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.13.0
+
+### Added
+- `authentikLogin`: the app's own Authentik login without an app password (D104). Mounts a service-account token meant
+  for Authentik only (audience `authentik`, 1 hour, renewed by the kubelet) read-only at `mountPath`; the app sends it
+  as its client_credentials assertion. It opens only what a protected Authentik blueprint grants the app's
+  `<namespace>/<service account>`. Off by default.
+
 ## nuwa-app 0.10.0
 
 ### Added
