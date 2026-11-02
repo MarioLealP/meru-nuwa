@@ -86,6 +86,15 @@
         "mountPath": { "type": "string", "pattern": "^/" }
       }
     },
+    "authentikLogin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "mountPath"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "mountPath": { "type": "string", "pattern": "^/" }
+      }
+    },
     "kubernetesApi": {
       "type": "object",
       "additionalProperties": false,

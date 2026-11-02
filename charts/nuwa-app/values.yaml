@@ -90,6 +90,15 @@ openbaoLogin:
   enabled: false
   mountPath: /var/run/meru/openbao
 
+# The app's own Authentik login (D104), for an app that calls a Meru service with Authentik tokens (Thoth, Temporal):
+# no app password - the pod sends this token as its client_credentials assertion and Authentik checks it against the
+# cluster's signing key. Mounted read-only at mountPath: `token`, a service-account token meant for Authentik only
+# (audience authentik, 1 hour, the kubelet swaps in a fresh one before it runs out). It opens only what a protected
+# Authentik blueprint grants `<namespace>/<service account>` (a group's k8s_workloads); without a grant, nothing.
+authentikLogin:
+  enabled: false
+  mountPath: /var/run/meru/authentik
+
 # The app's own Kubernetes API token, for an app that reads the cluster itself (Shikigami reads Argo CD Applications,
 # D85) - every other pod has none (automountServiceAccountToken stays false). Mounted read-only at mountPath: `token`,
 # a service-account token for the API server (10 minutes, renewed by the kubelet), and `ca.crt`, the cluster's CA. It
