@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.14.0
+
+### Added
+- `job`: a scheduled app instead of a long-running one (D107). `job.schedule` set (cron, `timeZone` default
+  Europe/Lisbon) renders a CronJob in place of the Deployment and the Service: one pod per run, never overlapping
+  (`concurrencyPolicy: Forbid`), `backoffLimit` retries, stopped after `activeDeadlineSeconds`, finished runs kept a
+  week. The pod spec is the Deployment's (now shared, `nuwa-app.podSpec`) minus port and probes - Kyverno's probe
+  rule covers long-running workloads only. Zabbix watches the CronJob's `status.lastSuccessfulTime`. Not with
+  `autoscaling` (the chart fails). Deployments render byte-for-byte as in 0.13.0.
+
 ## nuwa-app 0.13.0
 
 ### Added

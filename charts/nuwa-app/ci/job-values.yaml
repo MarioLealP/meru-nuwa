@@ -1,0 +1,12 @@
+# A scheduled app (D107): a CronJob instead of a Deployment, with the logins a purge job needs.
+name: charon
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/charon
+  digest: sha256:5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f
+job:
+  schedule: "30 3 * * *"
+openbaoLogin:
+  enabled: true
+kubernetesApi:
+  enabled: true

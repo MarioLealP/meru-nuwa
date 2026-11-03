@@ -1,0 +1,35 @@
+{{- if and (include "nuwa-app.runs" .) .Values.job.schedule }}
+{{- if .Values.autoscaling.enabled }}
+{{- fail "job.schedule and autoscaling don't go together: a CronJob has no replicas to scale" }}
+{{- end }}
+# A scheduled app (D107): one pod per run, the same pod spec as a Deployment minus port and probes. Zabbix watches
+# status.lastSuccessfulTime; a run never overlaps the one before it.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.name }}
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.job.schedule | quote }}
+  timeZone: {{ .Values.job.timeZone }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 3600 # a run missed while the node was down still starts within the hour
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    metadata:
+      labels:
+        {{- include "nuwa-app.labels" . | nindent 8 }}
+    spec:
+      backoffLimit: {{ .Values.job.backoffLimit }}
+      activeDeadlineSeconds: {{ .Values.job.activeDeadlineSeconds }}
+      ttlSecondsAfterFinished: 604800 # a week of finished runs and their logs
+      template:
+        metadata:
+          labels:
+            {{- include "nuwa-app.podLabels" . | nindent 12 }}
+        spec:
+          restartPolicy: Never
+          {{- include "nuwa-app.podSpec" . | nindent 10 }}
+{{- end }}
