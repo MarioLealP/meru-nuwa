@@ -20,7 +20,7 @@ done
 
 for case_name in placeholder retired; do
   echo "== $case_name renders nothing that runs the image"
-  if grep -nE '^kind: (Deployment|Job|ScaledObject)$' "out/$case_name.yaml"; then
+  if grep -nE '^kind: (Deployment|Job|CronJob|ScaledObject)$' "out/$case_name.yaml"; then
     echo "$case_name rendered a workload" >&2
     exit 1
   fi

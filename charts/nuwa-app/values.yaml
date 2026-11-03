@@ -15,6 +15,15 @@ image:
 
 replicas: 1 # ignored while autoscaling is on - KEDA owns the count then
 
+# A scheduled job instead of a long-running service (D107): `schedule` set = a CronJob, no Deployment, no Service,
+# no port or probes. The pod is otherwise the same (rules, secrets, OpenBao/Kubernetes logins). Zabbix watches the
+# CronJob's last successful run.
+job:
+  schedule: "" # cron, e.g. "30 3 * * *"; empty = a long-running Deployment
+  timeZone: Europe/Lisbon
+  backoffLimit: 2 # retries of a failed run before the run counts as failed
+  activeDeadlineSeconds: 3600 # a run is stopped after this
+
 # The port the app listens on. The Service exposes it as port 80.
 port: 8080
 
