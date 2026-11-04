@@ -35,6 +35,7 @@
       }
     },
     "port": { "type": "integer", "minimum": 1024, "maximum": 65535 },
+    "reloadsSecrets": { "type": "boolean" },
     "extraPorts": {
       "type": "array",
       "items": {

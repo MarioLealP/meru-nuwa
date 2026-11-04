@@ -170,6 +170,10 @@ tmp:
   enabled: true
   sizeLimit: 64Mi
 
+# true for an app that picks up new secret files itself: a rotated Secret then doesn't restart it (Kyverno's
+# restart-on-secret-change skips it). For an app where a restart costs something, like Warpgate's open sessions.
+reloadsSecrets: false
+
 # Persistent volumes. storageClass: local (SSD, default) or hdd. Any volume switches rollouts to Recreate.
 persistence: []
 #  - name: data

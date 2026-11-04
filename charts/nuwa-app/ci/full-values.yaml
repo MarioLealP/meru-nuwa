@@ -8,6 +8,7 @@ image:
 replicas: 2
 port: 9000
 clusterIP: 10.43.0.200
+reloadsSecrets: true
 extraPorts:
   - name: ssh
     port: 2222

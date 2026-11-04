@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.17.0
+
+### Added
+- `reloadsSecrets`: for an app that picks up new secret files itself, so a rotated Secret doesn't restart it.
+
 ## nuwa-app 0.16.0
 
 ### Added
