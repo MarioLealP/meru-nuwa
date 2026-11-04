@@ -35,6 +35,19 @@
       }
     },
     "port": { "type": "integer", "minimum": 1024, "maximum": 65535 },
+    "extraPorts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "port", "nodePort"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,13}[a-z0-9])?$", "not": { "const": "http" } },
+          "port": { "type": "integer", "minimum": 1024, "maximum": 65535 },
+          "nodePort": { "type": "integer", "minimum": 30000, "maximum": 32767 }
+        }
+      }
+    },
     "clusterIP": {
       "description": "A fixed Service address from the static band 10.43.0.2-10.43.0.255, or empty.",
       "type": "string",
@@ -45,6 +58,7 @@
       "additionalProperties": false,
       "properties": {
         "path": { "type": "string", "pattern": "^/" },
+        "scheme": { "enum": ["HTTP", "HTTPS"] },
         "readyPath": { "type": "string", "pattern": "^(/.*)?$" },
         "periodSeconds": { "type": "integer", "minimum": 1 },
         "timeoutSeconds": { "type": "integer", "minimum": 1 },

@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.15.0
+
+### Added
+- `extraPorts`: ports that aren't HTTP, published on the node (`name`, `port`, `nodePort`). Any entry makes the Service a
+  NodePort. For Warpgate's SSH, which Caddy can't forward.
+- `heartbeat.scheme`: `HTTPS` for an app that only serves TLS. Apps that set neither render byte-for-byte as in 0.14.0.
+
 ## nuwa-app 0.14.0
 
 ### Added

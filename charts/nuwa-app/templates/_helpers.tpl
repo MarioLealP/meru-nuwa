@@ -85,6 +85,10 @@ containers:
     ports:
       - name: http
         containerPort: {{ .Values.port }}
+      {{- range .Values.extraPorts }}
+      - name: {{ .name }}
+        containerPort: {{ .port }}
+      {{- end }}
 {{- end }}
     env:
       - name: PORT
@@ -110,6 +114,9 @@ containers:
       httpGet:
         path: {{ .Values.heartbeat.path }}
         port: http
+        {{- if eq .Values.heartbeat.scheme "HTTPS" }}
+        scheme: HTTPS
+        {{- end }}
       periodSeconds: 2
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: {{ .Values.heartbeat.startupFailureThreshold }}
@@ -117,6 +124,9 @@ containers:
       httpGet:
         path: {{ .Values.heartbeat.path }}
         port: http
+        {{- if eq .Values.heartbeat.scheme "HTTPS" }}
+        scheme: HTTPS
+        {{- end }}
       periodSeconds: {{ .Values.heartbeat.periodSeconds }}
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: {{ .Values.heartbeat.failureThreshold }}
@@ -124,6 +134,9 @@ containers:
       httpGet:
         path: {{ .Values.heartbeat.readyPath | default .Values.heartbeat.path }}
         port: http
+        {{- if eq .Values.heartbeat.scheme "HTTPS" }}
+        scheme: HTTPS
+        {{- end }}
       periodSeconds: {{ .Values.heartbeat.periodSeconds }}
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: 1
