@@ -7,6 +7,9 @@ metadata:
   labels:
     {{- include "nuwa-app.labels" . | nindent 4 }}
 spec:
+  {{- if .Values.extraPorts }}
+  type: NodePort
+  {{- end }}
   {{- with .Values.clusterIP }}
   clusterIP: {{ . }}
   {{- end }}
@@ -16,4 +19,10 @@ spec:
     - name: http
       port: 80
       targetPort: http
+    {{- range .Values.extraPorts }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .name }}
+      nodePort: {{ .nodePort }}
+    {{- end }}
 {{- end }}

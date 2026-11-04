@@ -8,6 +8,10 @@ image:
 replicas: 2
 port: 9000
 clusterIP: 10.43.0.200
+extraPorts:
+  - name: ssh
+    port: 2222
+    nodePort: 30222
 command: [python]
 args: [-m, echo]
 env:
@@ -42,6 +46,7 @@ externalSecrets:
     type: kubernetes.io/basic-auth
   echo-api-keys: {}
 heartbeat:
+  scheme: HTTPS
   readyPath: /ready
 migrate:
   enabled: true
