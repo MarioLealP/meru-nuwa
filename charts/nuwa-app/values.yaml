@@ -68,6 +68,12 @@ secretEnv: {}
 externalSecrets: {}
 #  myapp-db-runtime:
 #    type: kubernetes.io/basic-auth # optional, default Opaque
+#  myapp-config:
+#    mountPath: /etc/myapp # optional: the Secret as read-only files, for an app that can't read its secrets from the env
+#    files: # optional: the Secret's keys, each a template; {{ .key }} is that key's value in OpenBao. So a config file can
+#      # stay in git with only its secret in OpenBao. Without it, the keys are OpenBao's.
+#      config.yaml: |
+#        client_secret: {{ .client_secret }}
 
 # Where ESO (and cert-manager, for certificate below) log in: OpenBao's Kubernetes login, shared roles meru-eso /
 # meru-certs, which reach this namespace's own paths and names only (D71).

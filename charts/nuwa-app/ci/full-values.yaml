@@ -45,6 +45,11 @@ externalSecrets:
   echo-db-runtime:
     type: kubernetes.io/basic-auth
   echo-api-keys: {}
+  echo-config:
+    mountPath: /etc/echo
+    files:
+      config.yaml: |
+        client_secret: {{ .client_secret }}
 heartbeat:
   scheme: HTTPS
   readyPath: /ready

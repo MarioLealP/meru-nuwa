@@ -78,6 +78,8 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "mountPath": { "type": "string", "pattern": "^/" },
+          "files": { "type": "object", "additionalProperties": { "type": "string" } },
           "type": {
             "type": "string",
             "enum": [
