@@ -149,7 +149,7 @@ containers:
       readOnlyRootFilesystem: true
       capabilities:
         drop: [ALL]
-    {{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled }}
+    {{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled (include "nuwa-app.mountedSecrets" .) }}
     volumeMounts:
       {{- if .Values.tmp.enabled }}
       - name: tmp
@@ -163,6 +163,13 @@ containers:
       - name: cm-{{ .name }}
         mountPath: {{ .mountPath }}
         readOnly: true
+      {{- end }}
+      {{- range $name, $secret := .Values.externalSecrets }}
+      {{- with $secret.mountPath }}
+      - name: es-{{ $name | replace "." "-" }}
+        mountPath: {{ . }}
+        readOnly: true
+      {{- end }}
       {{- end }}
       {{- if .Values.certificate.enabled }}
       - name: tls
@@ -185,7 +192,7 @@ containers:
         readOnly: true
       {{- end }}
     {{- end }}
-{{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled .Values.authentikLogin.enabled }}
+{{- if or .Values.tmp.enabled .Values.persistence .Values.configMaps .Values.certificate.enabled .Values.openbaoLogin.enabled .Values.kubernetesApi.enabled .Values.authentikLogin.enabled (include "nuwa-app.mountedSecrets" .) }}
 volumes:
   {{- if .Values.tmp.enabled }}
   - name: tmp
@@ -202,6 +209,14 @@ volumes:
     configMap:
       name: {{ .name }}
       optional: true # made outside the chart; the pod starts before the first one exists
+  {{- end }}
+  {{- range $name, $secret := .Values.externalSecrets }}
+  {{- if $secret.mountPath }}
+  - name: es-{{ $name | replace "." "-" }}
+    secret:
+      secretName: {{ $name }}
+      defaultMode: 0400
+  {{- end }}
   {{- end }}
   {{- if .Values.certificate.enabled }}
   - name: tls
@@ -249,4 +264,9 @@ volumes:
                 path: ca.crt
   {{- end }}
 {{- end }}
+{{- end }}
+
+{{/* Non-empty when some externalSecrets entry is mounted as files. */}}
+{{- define "nuwa-app.mountedSecrets" -}}
+{{- range $name, $secret := .Values.externalSecrets }}{{ if $secret.mountPath }}{{ $name }} {{ end }}{{ end }}
 {{- end }}

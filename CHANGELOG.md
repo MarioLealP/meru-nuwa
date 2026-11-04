@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.16.0
+
+### Added
+- `externalSecrets.<name>.mountPath`: the Secret as read-only files, for an app that can't read secrets from the environment.
+- `externalSecrets.<name>.files`: the Secret's keys as templates, so a config file stays in git with only its secret in
+  OpenBao. For Warpgate, whose config file is its only way to get the OIDC client secret.
+
 ## nuwa-app 0.15.0
 
 ### Added
