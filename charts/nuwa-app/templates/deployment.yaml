@@ -5,6 +5,10 @@ metadata:
   name: {{ .Values.name }}
   labels:
     {{- include "nuwa-app.labels" . | nindent 4 }}
+  {{- if .Values.reloadsSecrets }}
+  annotations:
+    meru.clockmost.com/reloads-secrets: "true" # Kyverno's restart-on-secret-change skips it
+  {{- end }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicas }}

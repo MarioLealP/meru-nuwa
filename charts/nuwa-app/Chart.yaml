@@ -2,7 +2,7 @@ apiVersion: v2
 name: nuwa-app
 description: Meru's app chart - one web workload that passes every Meru compliance rule by construction.
 type: application
-version: 0.16.0
+version: 0.17.0
 home: https://git.clockmost.com/Meru/nuwa
 sources:
   - https://git.clockmost.com/Meru/nuwa
