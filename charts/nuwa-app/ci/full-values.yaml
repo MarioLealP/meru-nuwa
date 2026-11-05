@@ -53,6 +53,7 @@ externalSecrets:
         client_secret: {{ .client_secret }}
 heartbeat:
   scheme: HTTPS
+  host: full.clockmost.com
   readyPath: /ready
 migrate:
   enabled: true

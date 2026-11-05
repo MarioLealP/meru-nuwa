@@ -60,6 +60,7 @@
       "properties": {
         "path": { "type": "string", "pattern": "^/" },
         "scheme": { "enum": ["HTTP", "HTTPS"] },
+        "host": { "type": "string", "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)?$" },
         "readyPath": { "type": "string", "pattern": "^(/.*)?$" },
         "periodSeconds": { "type": "integer", "minimum": 1 },
         "timeoutSeconds": { "type": "integer", "minimum": 1 },

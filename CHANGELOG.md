@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.18.0
+
+### Added
+- `heartbeat.host`: the Host header the probes send. For an app that refuses requests to other hosts, like GlitchTip
+  (Django's `ALLOWED_HOSTS`), whose probes would otherwise get 400 for the pod's IP. Apps that don't set it render
+  byte-for-byte as in 0.17.0.
+
 ## nuwa-app 0.17.0
 
 ### Added

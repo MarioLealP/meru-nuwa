@@ -117,6 +117,11 @@ containers:
         {{- if eq .Values.heartbeat.scheme "HTTPS" }}
         scheme: HTTPS
         {{- end }}
+        {{- with .Values.heartbeat.host }}
+        httpHeaders:
+          - name: Host
+            value: {{ . | quote }}
+        {{- end }}
       periodSeconds: 2
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: {{ .Values.heartbeat.startupFailureThreshold }}
@@ -127,6 +132,11 @@ containers:
         {{- if eq .Values.heartbeat.scheme "HTTPS" }}
         scheme: HTTPS
         {{- end }}
+        {{- with .Values.heartbeat.host }}
+        httpHeaders:
+          - name: Host
+            value: {{ . | quote }}
+        {{- end }}
       periodSeconds: {{ .Values.heartbeat.periodSeconds }}
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: {{ .Values.heartbeat.failureThreshold }}
@@ -136,6 +146,11 @@ containers:
         port: http
         {{- if eq .Values.heartbeat.scheme "HTTPS" }}
         scheme: HTTPS
+        {{- end }}
+        {{- with .Values.heartbeat.host }}
+        httpHeaders:
+          - name: Host
+            value: {{ . | quote }}
         {{- end }}
       periodSeconds: {{ .Values.heartbeat.periodSeconds }}
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
