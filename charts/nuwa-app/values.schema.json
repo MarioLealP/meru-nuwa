@@ -155,7 +155,8 @@
         "enabled": { "type": "boolean" },
         "duration": { "type": "string", "pattern": "^[0-9]+(m|h)$" },
         "renewBefore": { "type": "string", "pattern": "^[0-9]+(m|h)$" },
-        "mountPath": { "type": "string", "pattern": "^/" }
+        "mountPath": { "type": "string", "pattern": "^/" },
+        "keyEncoding": { "enum": ["", "PKCS1", "PKCS8"] }
       }
     },
     "migrate": {

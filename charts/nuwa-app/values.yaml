@@ -104,6 +104,7 @@ certificate:
   duration: 24h
   renewBefore: 8h
   mountPath: /var/run/meru/tls
+  keyEncoding: "" # PKCS8 for a server that only reads that (granian: GlitchTip); default: cert-manager's own (PKCS1/SEC1)
 
 # The app's own OpenBao login, for an app that writes to OpenBao itself (Shikigami, D79) - everyone else reads through
 # externalSecrets above. Mounted read-only at mountPath: `token`, a service-account token meant for OpenBao only

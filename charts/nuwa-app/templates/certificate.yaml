@@ -91,6 +91,9 @@ spec:
     algorithm: ECDSA
     size: 256
     rotationPolicy: Always
+    {{- with .Values.certificate.keyEncoding }}
+    encoding: {{ . }}
+    {{- end }}
   usages: [server auth, client auth, digital signature]
   issuerRef:
     name: openbao
