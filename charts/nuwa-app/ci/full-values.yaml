@@ -33,6 +33,7 @@ certificate:
   duration: 12h
   renewBefore: 4h
   mountPath: /var/run/meru/tls
+  keyEncoding: PKCS8
 openbaoLogin:
   enabled: true
   mountPath: /var/run/meru/openbao

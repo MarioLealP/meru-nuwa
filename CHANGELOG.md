@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.19.0
+
+### Added
+- `certificate.keyEncoding`: `PKCS8` writes the certificate's private key in PKCS#8, for a server that only reads that format
+  (granian, which serves GlitchTip). Apps that don't set it render byte-for-byte as in 0.18.0.
+
 ## nuwa-app 0.18.0
 
 ### Added
