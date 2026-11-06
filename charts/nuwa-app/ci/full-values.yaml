@@ -77,6 +77,8 @@ persistence:
     storageClass: hdd
 otel:
   endpoint: http://openobserve.example:5081/api/default
+glitchtip:
+  dsn: https://0123456789abcdef0123456789abcdef@glitchtip.example/7
 configMaps:
   - name: echo-feed
     mountPath: /data/feed

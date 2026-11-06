@@ -103,6 +103,10 @@ containers:
         value: {{ . | quote }}
       {{- end }}
       {{- end }}
+      {{- with .Values.glitchtip.dsn }}
+      - name: SENTRY_DSN
+        value: {{ . | quote }}
+      {{- end }}
       {{- range $key, $value := .Values.env }}
       - name: {{ $key }}
         value: {{ $value | quote }}
