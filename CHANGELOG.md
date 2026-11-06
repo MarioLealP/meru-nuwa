@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.20.0
+
+### Added
+- `glitchtip.dsn`: the app's GlitchTip DSN (D125), written by Shikigami at onboarding. Set, the pod gets `SENTRY_DSN`
+  for the Sentry SDK. Apps that don't set it render byte-for-byte as in 0.19.0.
+
 ## nuwa-app 0.19.0
 
 ### Added

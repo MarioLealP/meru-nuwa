@@ -206,3 +206,9 @@ networkPolicy:
 otel:
   enabled: true
   endpoint: ""
+
+# Crash reports to GlitchTip (D125): the app's DSN, which Shikigami writes here at onboarding. Plain config, not a
+# secret - the key only sends reports, and GlitchTip is LAN + VPN only. Set: the pod gets SENTRY_DSN, which the Sentry
+# SDK reads. Empty: no SENTRY_DSN, the SDK stays off.
+glitchtip:
+  dsn: ""
