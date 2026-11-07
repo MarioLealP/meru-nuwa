@@ -1,0 +1,11 @@
+# A nuwa-static site: answers only, opens no connections (networkPolicy.egress none).
+name: paissa-map
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/paissa-map
+  digest: sha256:5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f
+otel:
+  enabled: false
+networkPolicy:
+  enabled: true
+  egress: none
