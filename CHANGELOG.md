@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.21.0
+
+### Added
+- `networkPolicy.egress`: `none` lets the app's pods open no connections at all (not even DNS), for an app that only
+  answers - the nuwa-static template's sites. Default `allow`; apps that don't set it render byte-for-byte as in 0.20.0.
+
 ## nuwa-app 0.20.0
 
 ### Added

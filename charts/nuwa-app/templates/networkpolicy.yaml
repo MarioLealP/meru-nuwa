@@ -13,7 +13,14 @@ spec:
   podSelector:
     matchLabels:
       {{- include "nuwa-app.selectorLabels" . | nindent 6 }}
+  {{- /* egress none: the pods may open no connections at all, not even DNS - for an app that only answers (a static
+  site, whose browser fetches anything else itself). */}}
+  {{- if eq .Values.networkPolicy.egress "none" }}
+  policyTypes: [Ingress, Egress]
+  egress: []
+  {{- else }}
   policyTypes: [Ingress]
+  {{- end }}
   ingress:
     {{- if .Values.networkPolicy.fromHost }}
     - from:

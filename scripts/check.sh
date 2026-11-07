@@ -34,6 +34,13 @@ if [ "$count" != 1 ]; then
   exit 1
 fi
 
+echo "== egress none: the static case's policy refuses every outgoing connection"
+policy=$(helm template static "$chart" -n test -f "$chart/ci/static-values.yaml" --show-only templates/networkpolicy.yaml)
+if ! grep -qx '  policyTypes: \[Ingress, Egress\]' <<<"$policy" || ! grep -qx '  egress: \[\]' <<<"$policy"; then
+  echo "static case: expected policyTypes [Ingress, Egress] with egress []" >&2
+  exit 1
+fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.
