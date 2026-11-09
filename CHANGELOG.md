@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.23.0
+
+### Added
+- `runtimeClassName`: the pods' RuntimeClass, e.g. `nvidia` with env `NVIDIA_VISIBLE_DEVICES: all` for Felt's GPU
+  services, which share both cards (a device plugin would give each pod whole cards). Apps that don't set it render
+  byte-for-byte as in 0.22.0.
+
 ## nuwa-app 0.22.0
 
 ### Added

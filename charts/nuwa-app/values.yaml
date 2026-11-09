@@ -29,9 +29,13 @@ port: 8080
 
 # A fixed Service address, for callers outside the cluster that can't use its DNS name (e.g. Gitea's webhook).
 # Only from the static band 10.43.0.2-10.43.0.255 (Kubernetes assigns automatic addresses from the rest, so these
-# never collide); taken: .1 API, .10 DNS, .50 Zot, .60 Shikigami. Empty = Kubernetes picks. Changing it on a live
+# never collide); taken: .1 API, .10 DNS, .50 Zot, .60 Shikigami, .70 searxng. Empty = Kubernetes picks. Changing it on a live
 # Service means deleting the Service once (the address can't change in place).
 clusterIP: ""
+# The container runtime for the app's pods, by RuntimeClass name. Empty = the default (runc). `nvidia` (k3s makes it
+# when the NVIDIA container toolkit is on the node) gives the pod the GPUs named in env NVIDIA_VISIBLE_DEVICES
+# (`all` = every card, shared with other pods, as on compose) - no device plugin, so no whole-card-per-pod split.
+runtimeClassName: ""
 # Ports that aren't the app's HTTP, reached from outside the cluster on the node (Caddy only forwards HTTP). Any entry
 # makes the Service a NodePort, and the node's firewall still has to let it in. The port's traffic reaches the pod from
 # the node's address, so a networkPolicy needs fromHost.

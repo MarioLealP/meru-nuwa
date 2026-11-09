@@ -62,6 +62,9 @@ runs to its end, rule 6 checks long-running workloads only). Every other rule ho
 {{- define "nuwa-app.podSpec" -}}
 serviceAccountName: {{ .Values.name }}
 automountServiceAccountToken: false
+{{- with .Values.runtimeClassName }}
+runtimeClassName: {{ . }}
+{{- end }}
 # Pod Security "restricted" (rule 4), spelled out so the pod passes it whatever the image does.
 securityContext:
   runAsNonRoot: true
