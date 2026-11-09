@@ -51,6 +51,17 @@ for want in '  policyTypes: \[Ingress, Egress\]' '              k8s-app: kube-dn
   fi
 done
 
+echo "== runtimeClassName: set only when asked"
+gpu=$(helm template gpu "$chart" -n test -f "$chart/ci/gpu-values.yaml" --show-only templates/deployment.yaml)
+if ! grep -qx '      runtimeClassName: nvidia' <<<"$gpu"; then
+  echo "gpu case: missing runtimeClassName: nvidia" >&2
+  exit 1
+fi
+if helm template minimal "$chart" -n test -f "$chart/ci/minimal-values.yaml" | grep -q runtimeClassName; then
+  echo "minimal case: runtimeClassName rendered without being set" >&2
+  exit 1
+fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.

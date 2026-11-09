@@ -1,0 +1,11 @@
+# A GPU app (felt-vision): runtimeClassName nvidia + every card shared.
+name: felt-vision
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/felt-vision
+  digest: sha256:7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b
+otel:
+  enabled: false
+runtimeClassName: nvidia
+env:
+  NVIDIA_VISIBLE_DEVICES: all

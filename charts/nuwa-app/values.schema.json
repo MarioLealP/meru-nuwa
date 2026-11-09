@@ -49,6 +49,11 @@
         }
       }
     },
+    "runtimeClassName": {
+      "description": "The pods' RuntimeClass (e.g. nvidia for the GPUs), or empty for the default.",
+      "type": "string",
+      "pattern": "^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?$"
+    },
     "clusterIP": {
       "description": "A fixed Service address from the static band 10.43.0.2-10.43.0.255, or empty.",
       "type": "string",
