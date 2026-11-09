@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.22.0
+
+### Added
+- `networkPolicy.egress`: `internet` lets the app's pods reach DNS (CoreDNS only) and public addresses - never the
+  LAN, the cluster, Docker's compose networks, the node or link-local. For an app that only talks to the internet
+  (SearXNG, the Twitch miners). Apps that don't set it render byte-for-byte as in 0.21.0.
+
 ## nuwa-app 0.21.0
 
 ### Added

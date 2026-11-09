@@ -1,0 +1,11 @@
+# An app that only talks to the internet (SearXNG, a miner): networkPolicy.egress internet.
+name: searxng
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/searxng
+  digest: sha256:6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a
+otel:
+  enabled: false
+networkPolicy:
+  enabled: true
+  egress: internet
