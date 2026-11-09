@@ -201,7 +201,8 @@ networkPolicy:
   hostAddresses: [10.42.0.1/32, 172.16.0.0/12]
   fromNamespaces: [] # e.g. [janus] for an app Janus calls
   # Connections the pods may open: allow = anything (most apps call Thoth, Temporal, OpenBao, ...); none = nothing,
-  # not even DNS - for an app that only answers, like a static site. Only with enabled.
+  # not even DNS - for an app that only answers, like a static site; internet = DNS + public addresses only, never the
+  # LAN, the cluster or the compose networks - for an app that only talks to the internet. Only with enabled.
   egress: allow
 
 # Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its

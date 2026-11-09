@@ -41,6 +41,16 @@ if ! grep -qx '  policyTypes: \[Ingress, Egress\]' <<<"$policy" || ! grep -qx ' 
   exit 1
 fi
 
+echo "== egress internet: DNS to CoreDNS, then public addresses only"
+policy=$(helm template internet "$chart" -n test -f "$chart/ci/internet-values.yaml" --show-only templates/networkpolicy.yaml)
+for want in '  policyTypes: \[Ingress, Egress\]' '              k8s-app: kube-dns' '            cidr: 0.0.0.0/0' \
+  '            except: \[10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 100.64.0.0/10, 169.254.0.0/16, 127.0.0.0/8\]'; do
+  if ! grep -qx "$want" <<<"$policy"; then
+    echo "internet case: missing line: $want" >&2
+    exit 1
+  fi
+done
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.
