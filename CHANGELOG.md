@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.26.0
+
+### Added
+- `heartbeat.port`: the probes use this separate container port (named `health`) instead of the app's port - for an
+  app whose own port demands client certificates, which the kubelet never presents (drive-rag on Meru's mTLS, D127).
+  Not added to the Service. Apps that don't set it render byte-for-byte as in 0.25.0.
+
 ## nuwa-app 0.25.0
 
 ### Added

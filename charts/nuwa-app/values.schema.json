@@ -67,6 +67,7 @@
         "scheme": { "enum": ["HTTP", "HTTPS"] },
         "host": { "type": "string", "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)?$" },
         "readyPath": { "type": "string", "pattern": "^(/.*)?$" },
+        "port": { "type": "integer", "minimum": 0, "maximum": 65535 },
         "periodSeconds": { "type": "integer", "minimum": 1 },
         "timeoutSeconds": { "type": "integer", "minimum": 1 },
         "failureThreshold": { "type": "integer", "minimum": 1 },

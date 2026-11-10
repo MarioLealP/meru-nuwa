@@ -88,6 +88,10 @@ containers:
     ports:
       - name: http
         containerPort: {{ .Values.port }}
+      {{- with .Values.heartbeat.port }}
+      - name: health
+        containerPort: {{ . }}
+      {{- end }}
       {{- range .Values.extraPorts }}
       - name: {{ .name }}
         containerPort: {{ .port }}
@@ -120,7 +124,7 @@ containers:
     startupProbe:
       httpGet:
         path: {{ .Values.heartbeat.path }}
-        port: http
+        port: {{ if .Values.heartbeat.port }}health{{ else }}http{{ end }}
         {{- if eq .Values.heartbeat.scheme "HTTPS" }}
         scheme: HTTPS
         {{- end }}
@@ -135,7 +139,7 @@ containers:
     livenessProbe:
       httpGet:
         path: {{ .Values.heartbeat.path }}
-        port: http
+        port: {{ if .Values.heartbeat.port }}health{{ else }}http{{ end }}
         {{- if eq .Values.heartbeat.scheme "HTTPS" }}
         scheme: HTTPS
         {{- end }}
@@ -150,7 +154,7 @@ containers:
     readinessProbe:
       httpGet:
         path: {{ .Values.heartbeat.readyPath | default .Values.heartbeat.path }}
-        port: http
+        port: {{ if .Values.heartbeat.port }}health{{ else }}http{{ end }}
         {{- if eq .Values.heartbeat.scheme "HTTPS" }}
         scheme: HTTPS
         {{- end }}
