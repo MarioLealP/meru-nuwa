@@ -49,6 +49,7 @@ heartbeat:
   path: /heartbeat
   scheme: HTTP # HTTPS for an app that only serves TLS; the kubelet doesn't check the certificate
   host: "" # the Host header the probes send, for an app that refuses other hosts (Django's ALLOWED_HOSTS); default: the pod's IP
+  port: 0 # a separate plain port the probes use, for an app whose own port demands client certs (drive-rag); not in the Service
   readyPath: "" # readiness, when the app has its own "can serve" check (e.g. its database answers); default: path
   periodSeconds: 10
   timeoutSeconds: 2

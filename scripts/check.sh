@@ -66,6 +66,13 @@ echo "== toNamespaces: egress to the named apps + DNS, and nothing more"
 to=$(helm template to "$chart" -n test -f "$chart/ci/to-namespaces-values.yaml" --show-only templates/networkpolicy.yaml)
 grep -q 'values: \["felt-llm"\]' <<<"$to" || { echo "toNamespaces case: no rule to felt-llm" >&2; exit 1; }
 grep -q 'k8s-app: kube-dns' <<<"$to" || { echo "toNamespaces case: no DNS rule" >&2; exit 1; }
+echo "== heartbeat.port: probes on the health port, the Service still on the app's"
+dep=$(helm template to "$chart" -n test -f "$chart/ci/to-namespaces-values.yaml" --show-only templates/deployment.yaml)
+[ "$(grep -c 'port: health' <<<"$dep")" = 3 ] || { echo "heartbeat.port: not every probe uses the health port" >&2; exit 1; }
+grep -q 'containerPort: 8001' <<<"$dep" || { echo "heartbeat.port: no health container port" >&2; exit 1; }
+if helm template to "$chart" -n test -f "$chart/ci/to-namespaces-values.yaml" --show-only templates/service.yaml | grep -q '8001\|health'; then
+  echo "heartbeat.port: the health port leaked into the Service" >&2; exit 1
+fi
 eg=$(sed -n '/^  egress:/,/^  ingress:/p' <<<"$to")
 grep -q 'cidr: 192.168.10.110/32' <<<"$eg" || { echo "toAddresses case: no rule to the address" >&2; exit 1; }
 grep -q '{ protocol: TCP, port: 443 }' <<<"$eg" || { echo "toAddresses case: the address rule has no port" >&2; exit 1; }

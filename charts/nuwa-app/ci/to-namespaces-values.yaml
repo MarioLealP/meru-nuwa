@@ -13,3 +13,6 @@ networkPolicy:
   toAddresses:
     - cidr: 192.168.10.110/32
       ports: [443]
+heartbeat:
+  path: /api/health
+  port: 8001
