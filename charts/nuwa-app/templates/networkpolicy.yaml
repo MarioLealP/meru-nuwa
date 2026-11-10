@@ -16,12 +16,18 @@ spec:
   {{- /* egress none: the pods may open no connections at all, not even DNS - for an app that only answers (a static
   site, whose browser fetches anything else itself). */}}
   {{- $to := .Values.networkPolicy.toNamespaces }}
+  {{- $addrs := .Values.networkPolicy.toAddresses }}
   {{- if eq .Values.networkPolicy.egress "none" }}
   policyTypes: [Ingress, Egress]
-  {{- if $to }}
+  {{- if or $to $addrs }}
   egress:
     {{- include "nuwa-app.egressDNS" . | nindent 4 }}
-    {{- include "nuwa-app.egressToNamespaces" $to | nindent 4 }}
+    {{- with $to }}
+    {{- include "nuwa-app.egressToNamespaces" . | nindent 4 }}
+    {{- end }}
+    {{- with $addrs }}
+    {{- include "nuwa-app.egressToAddresses" . | trim | nindent 4 }}
+    {{- end }}
   {{- else }}
   egress: []
   {{- end }}
@@ -38,6 +44,9 @@ spec:
             except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 100.64.0.0/10, 169.254.0.0/16, 127.0.0.0/8]
     {{- with $to }}
     {{- include "nuwa-app.egressToNamespaces" . | nindent 4 }}
+    {{- end }}
+    {{- with $addrs }}
+    {{- include "nuwa-app.egressToAddresses" . | trim | nindent 4 }}
     {{- end }}
   {{- else }}
   policyTypes: [Ingress]
@@ -81,4 +90,17 @@ own policy must let this one in (its fromNamespaces). */}}
           - key: kubernetes.io/metadata.name
             operator: In
             values: {{ toJson . }}
+{{- end }}
+{{- /* toAddresses: one rule per entry - that address range, only those TCP ports. For a private address egress
+internet leaves out, e.g. Caddy on the host for Authentik's keys. */}}
+{{- define "nuwa-app.egressToAddresses" -}}
+{{- range . }}
+- to:
+    - ipBlock:
+        cidr: {{ .cidr }}
+  ports:
+    {{- range .ports }}
+    - { protocol: TCP, port: {{ . }} }
+    {{- end }}
+{{- end }}
 {{- end }}

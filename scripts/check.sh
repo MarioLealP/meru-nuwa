@@ -66,7 +66,10 @@ echo "== toNamespaces: egress to the named apps + DNS, and nothing more"
 to=$(helm template to "$chart" -n test -f "$chart/ci/to-namespaces-values.yaml" --show-only templates/networkpolicy.yaml)
 grep -q 'values: \["felt-llm"\]' <<<"$to" || { echo "toNamespaces case: no rule to felt-llm" >&2; exit 1; }
 grep -q 'k8s-app: kube-dns' <<<"$to" || { echo "toNamespaces case: no DNS rule" >&2; exit 1; }
-if sed -n '/^  egress:/,/^  ingress:/p' <<<"$to" | grep -q ipBlock; then echo "toNamespaces case (egress none): rendered an ipBlock" >&2; exit 1; fi
+eg=$(sed -n '/^  egress:/,/^  ingress:/p' <<<"$to")
+grep -q 'cidr: 192.168.10.110/32' <<<"$eg" || { echo "toAddresses case: no rule to the address" >&2; exit 1; }
+grep -q '{ protocol: TCP, port: 443 }' <<<"$eg" || { echo "toAddresses case: the address rule has no port" >&2; exit 1; }
+if grep 'cidr:' <<<"$eg" | grep -qv '192.168.10.110/32'; then echo "toNamespaces case (egress none): an ipBlock beyond toAddresses" >&2; exit 1; fi
 none=$(helm template none "$chart" -n test -f "$chart/ci/static-values.yaml" --show-only templates/networkpolicy.yaml 2>/dev/null || true)
 if [ -n "$none" ] && ! grep -q 'egress: \[\]' <<<"$none"; then
   echo "static case: egress none no longer renders egress: []" >&2

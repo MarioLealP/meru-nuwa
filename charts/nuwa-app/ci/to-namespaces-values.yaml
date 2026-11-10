@@ -10,3 +10,6 @@ networkPolicy:
   enabled: true
   egress: none
   toNamespaces: [felt-llm]
+  toAddresses:
+    - cidr: 192.168.10.110/32
+      ports: [443]
