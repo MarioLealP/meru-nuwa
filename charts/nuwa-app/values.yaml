@@ -208,6 +208,9 @@ networkPolicy:
   # not even DNS - for an app that only answers, like a static site; internet = DNS + public addresses only, never the
   # LAN, the cluster or the compose networks - for an app that only talks to the internet. Only with enabled.
   egress: allow
+  # With egress none or internet: also the pods of these apps (their namespaces), plus DNS - e.g. [felt-llm] for
+  # poe2rag. The other app's policy must let this one in (its fromNamespaces).
+  toNamespaces: []
 
 # Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its
 # OpenObserve credentials (Infisical).

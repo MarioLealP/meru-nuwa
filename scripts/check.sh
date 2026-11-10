@@ -62,6 +62,17 @@ if helm template minimal "$chart" -n test -f "$chart/ci/minimal-values.yaml" | g
   exit 1
 fi
 
+echo "== toNamespaces: egress to the named apps + DNS, and nothing more"
+to=$(helm template to "$chart" -n test -f "$chart/ci/to-namespaces-values.yaml" --show-only templates/networkpolicy.yaml)
+grep -q 'values: \["felt-llm"\]' <<<"$to" || { echo "toNamespaces case: no rule to felt-llm" >&2; exit 1; }
+grep -q 'k8s-app: kube-dns' <<<"$to" || { echo "toNamespaces case: no DNS rule" >&2; exit 1; }
+if sed -n '/^  egress:/,/^  ingress:/p' <<<"$to" | grep -q ipBlock; then echo "toNamespaces case (egress none): rendered an ipBlock" >&2; exit 1; fi
+none=$(helm template none "$chart" -n test -f "$chart/ci/static-values.yaml" --show-only templates/networkpolicy.yaml 2>/dev/null || true)
+if [ -n "$none" ] && ! grep -q 'egress: \[\]' <<<"$none"; then
+  echo "static case: egress none no longer renders egress: []" >&2
+  exit 1
+fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.
