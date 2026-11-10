@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.25.0
+
+### Added
+- `networkPolicy.toAddresses`: with `egress: none` or `internet`, the app's pods may also reach these address ranges
+  on the listed TCP ports only - e.g. `{cidr: 192.168.10.110/32, ports: [443]}` for Caddy on the host (Authentik's
+  keys and tokens), a private address `internet` leaves out. Apps that don't set it render byte-for-byte as in 0.24.0.
+
 ## nuwa-app 0.24.0
 
 ### Added

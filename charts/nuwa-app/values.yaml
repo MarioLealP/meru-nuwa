@@ -211,6 +211,9 @@ networkPolicy:
   # With egress none or internet: also the pods of these apps (their namespaces), plus DNS - e.g. [felt-llm] for
   # poe2rag. The other app's policy must let this one in (its fromNamespaces).
   toNamespaces: []
+  # With egress none or internet: also these addresses, only the listed TCP ports - e.g. Caddy on the host
+  # ({cidr: 192.168.10.110/32, ports: [443]}) for Authentik's keys and tokens.
+  toAddresses: []
 
 # Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its
 # OpenObserve credentials (Infisical).
