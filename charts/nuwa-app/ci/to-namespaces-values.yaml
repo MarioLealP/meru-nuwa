@@ -1,0 +1,12 @@
+# An app that only answers and calls one other app (poe2rag -> felt-llm): egress none + toNamespaces.
+name: poe2rag
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/poe2rag
+  digest: sha256:7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b
+otel:
+  enabled: false
+networkPolicy:
+  enabled: true
+  egress: none
+  toNamespaces: [felt-llm]

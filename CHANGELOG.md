@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.24.0
+
+### Added
+- `networkPolicy.toNamespaces`: with `egress: none` or `internet`, the app's pods may also open connections to the
+  pods of the named apps (their namespaces), plus DNS through CoreDNS - e.g. `[felt-llm]` for poe2rag. The other app's
+  own policy must let this one in (`fromNamespaces`). Apps that don't set it render byte-for-byte as in 0.23.0.
+
 ## nuwa-app 0.23.0
 
 ### Added

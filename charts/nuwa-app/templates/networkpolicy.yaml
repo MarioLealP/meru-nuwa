@@ -15,29 +15,30 @@ spec:
       {{- include "nuwa-app.selectorLabels" . | nindent 6 }}
   {{- /* egress none: the pods may open no connections at all, not even DNS - for an app that only answers (a static
   site, whose browser fetches anything else itself). */}}
+  {{- $to := .Values.networkPolicy.toNamespaces }}
   {{- if eq .Values.networkPolicy.egress "none" }}
   policyTypes: [Ingress, Egress]
+  {{- if $to }}
+  egress:
+    {{- include "nuwa-app.egressDNS" . | nindent 4 }}
+    {{- include "nuwa-app.egressToNamespaces" $to | nindent 4 }}
+  {{- else }}
   egress: []
+  {{- end }}
   {{- /* egress internet: DNS (CoreDNS only) and public addresses - never the LAN, the cluster (Services resolve to pod
   addresses in 10.42/16), Docker's compose networks, the node or link-local. For an app that talks to the internet and
   to nothing of ours: a scraper, a miner, a metasearch engine. */}}
   {{- else if eq .Values.networkPolicy.egress "internet" }}
   policyTypes: [Ingress, Egress]
   egress:
-    - to:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: kube-system
-          podSelector:
-            matchLabels:
-              k8s-app: kube-dns
-      ports:
-        - { protocol: UDP, port: 53 }
-        - { protocol: TCP, port: 53 }
+    {{- include "nuwa-app.egressDNS" . | nindent 4 }}
     - to:
         - ipBlock:
             cidr: 0.0.0.0/0
             except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 100.64.0.0/10, 169.254.0.0/16, 127.0.0.0/8]
+    {{- with $to }}
+    {{- include "nuwa-app.egressToNamespaces" . | nindent 4 }}
+    {{- end }}
   {{- else }}
   policyTypes: [Ingress]
   {{- end }}
@@ -57,4 +58,27 @@ spec:
                 operator: In
                 values: {{ toJson . }}
     {{- end }}
+{{- end }}
+{{- /* DNS through CoreDNS only. */}}
+{{- define "nuwa-app.egressDNS" -}}
+- to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+  ports:
+    - { protocol: UDP, port: 53 }
+    - { protocol: TCP, port: 53 }
+{{- end }}
+{{- /* toNamespaces: the pods of these apps (their namespaces), any port - e.g. poe2rag -> felt-llm. The other app's
+own policy must let this one in (its fromNamespaces). */}}
+{{- define "nuwa-app.egressToNamespaces" -}}
+- to:
+    - namespaceSelector:
+        matchExpressions:
+          - key: kubernetes.io/metadata.name
+            operator: In
+            values: {{ toJson . }}
 {{- end }}
