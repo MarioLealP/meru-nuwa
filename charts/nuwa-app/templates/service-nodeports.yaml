@@ -1,0 +1,21 @@
+{{- if and .Values.nodePorts (not .Values.job.schedule) }}
+# The app's ports on the node (nodePorts): only these, so the app's own Service stays ClusterIP.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.name }}-ports
+  labels:
+    {{- include "nuwa-app.labels" . | nindent 4 }}
+spec:
+  type: NodePort
+  selector:
+    {{- include "nuwa-app.selectorLabels" . | nindent 4 }}
+  ports:
+    {{- range .Values.nodePorts }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      protocol: {{ .protocol | default "TCP" }}
+      targetPort: {{ if .targetPort }}http{{ else }}{{ .name }}{{ end }}
+      nodePort: {{ .nodePort }}
+    {{- end }}
+{{- end }}

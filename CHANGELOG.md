@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.27.0
+
+### Added
+- `heartbeat.scheme: TCP`: the probes only open a TCP connection (on the health port, else the app's port) - for an
+  app with no HTTP at all, like a game server.
+- `nodePorts`: ports on the node, TCP or UDP, in a Service of their own (`<name>-ports`), so the app's own Service stays
+  ClusterIP and its other ports (a game's RCON) never reach the node. `targetPort: true` points one at the app's main
+  port; otherwise a container port named after the entry is added. `extraPorts` stays as it is (Warpgate's SSH).
+- `terminationGracePeriodSeconds`: time after SIGTERM before the kill (0 = Kubernetes' 30) - e.g. saving a world.
+
+Apps that set none of these render byte-for-byte as in 0.26.0 (all 33 Meru apps checked).
+
 ## nuwa-app 0.26.0
 
 ### Added

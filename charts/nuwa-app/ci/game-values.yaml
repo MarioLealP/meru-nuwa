@@ -1,0 +1,28 @@
+# A game server (0.27.0): no HTTP, so TCP probes on its RCON port; players reach a UDP port and a TCP port on the node
+# through the <name>-ports Service while the app's own Service stays ClusterIP; time to save the world on stop.
+name: game
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/game
+  digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+port: 27015
+heartbeat:
+  scheme: TCP
+nodePorts:
+  - name: game
+    port: 34197
+    protocol: UDP
+    nodePort: 30197
+  - name: rcon
+    port: 27015
+    targetPort: true
+    nodePort: 30015
+terminationGracePeriodSeconds: 120
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+networkPolicy:
+  enabled: true
