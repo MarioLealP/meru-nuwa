@@ -59,9 +59,34 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 
 {{/* The pod spec the Deployment and the CronJob share (job.schedule set = a CronJob: no port, no probes - a job
 runs to its end, rule 6 checks long-running workloads only). Every other rule holds for both. */}}
+{{- /* What a probe does: an HTTP GET on the heartbeat path, or with heartbeat.scheme TCP only a TCP connect (for an app
+with no HTTP at all, e.g. a game server). On the health port when heartbeat.port is set, else on the app's port. */}}
+{{- define "nuwa-app.probeAction" -}}
+{{- $v := .root.Values -}}
+{{- if eq $v.heartbeat.scheme "TCP" -}}
+tcpSocket:
+  port: {{ if $v.heartbeat.port }}health{{ else }}http{{ end }}
+{{- else -}}
+httpGet:
+  path: {{ .path }}
+  port: {{ if $v.heartbeat.port }}health{{ else }}http{{ end }}
+  {{- if eq $v.heartbeat.scheme "HTTPS" }}
+  scheme: HTTPS
+  {{- end }}
+  {{- with $v.heartbeat.host }}
+  httpHeaders:
+    - name: Host
+      value: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
 {{- define "nuwa-app.podSpec" -}}
 serviceAccountName: {{ .Values.name }}
 automountServiceAccountToken: false
+{{- with .Values.terminationGracePeriodSeconds }}
+terminationGracePeriodSeconds: {{ . }}
+{{- end }}
 {{- with .Values.runtimeClassName }}
 runtimeClassName: {{ . }}
 {{- end }}
@@ -96,6 +121,15 @@ containers:
       - name: {{ .name }}
         containerPort: {{ .port }}
       {{- end }}
+      {{- range .Values.nodePorts }}
+      {{- if not .targetPort }}
+      - name: {{ .name }}
+        containerPort: {{ .port }}
+        {{- if eq (.protocol | default "TCP") "UDP" }}
+        protocol: UDP
+        {{- end }}
+      {{- end }}
+      {{- end }}
 {{- end }}
     env:
       - name: PORT
@@ -122,47 +156,17 @@ containers:
 {{- if not .Values.job.schedule }}
     # Rule 6: the platform knows when the app is up (startup), alive (liveness) and serving (readiness).
     startupProbe:
-      httpGet:
-        path: {{ .Values.heartbeat.path }}
-        port: {{ if .Values.heartbeat.port }}health{{ else }}http{{ end }}
-        {{- if eq .Values.heartbeat.scheme "HTTPS" }}
-        scheme: HTTPS
-        {{- end }}
-        {{- with .Values.heartbeat.host }}
-        httpHeaders:
-          - name: Host
-            value: {{ . | quote }}
-        {{- end }}
+      {{- include "nuwa-app.probeAction" (dict "root" $ "path" $.Values.heartbeat.path) | nindent 6 }}
       periodSeconds: 2
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: {{ .Values.heartbeat.startupFailureThreshold }}
     livenessProbe:
-      httpGet:
-        path: {{ .Values.heartbeat.path }}
-        port: {{ if .Values.heartbeat.port }}health{{ else }}http{{ end }}
-        {{- if eq .Values.heartbeat.scheme "HTTPS" }}
-        scheme: HTTPS
-        {{- end }}
-        {{- with .Values.heartbeat.host }}
-        httpHeaders:
-          - name: Host
-            value: {{ . | quote }}
-        {{- end }}
+      {{- include "nuwa-app.probeAction" (dict "root" $ "path" $.Values.heartbeat.path) | nindent 6 }}
       periodSeconds: {{ .Values.heartbeat.periodSeconds }}
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: {{ .Values.heartbeat.failureThreshold }}
     readinessProbe:
-      httpGet:
-        path: {{ .Values.heartbeat.readyPath | default .Values.heartbeat.path }}
-        port: {{ if .Values.heartbeat.port }}health{{ else }}http{{ end }}
-        {{- if eq .Values.heartbeat.scheme "HTTPS" }}
-        scheme: HTTPS
-        {{- end }}
-        {{- with .Values.heartbeat.host }}
-        httpHeaders:
-          - name: Host
-            value: {{ . | quote }}
-        {{- end }}
+      {{- include "nuwa-app.probeAction" (dict "root" $ "path" ($.Values.heartbeat.readyPath | default $.Values.heartbeat.path)) | nindent 6 }}
       periodSeconds: {{ .Values.heartbeat.periodSeconds }}
       timeoutSeconds: {{ .Values.heartbeat.timeoutSeconds }}
       failureThreshold: 1

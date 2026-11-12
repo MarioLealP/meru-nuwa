@@ -83,6 +83,15 @@ if [ -n "$none" ] && ! grep -q 'egress: \[\]' <<<"$none"; then
   exit 1
 fi
 
+echo "== nodePorts: only the -ports Service is a NodePort, UDP kept; TCP probes; grace period"
+game=out/game.yaml
+[ "$(grep -c '^  type: NodePort$' "$game")" = 1 ] || { echo "game: the app's own Service must stay ClusterIP" >&2; exit 1; }
+grep -q '^  name: game-ports$' "$game" || { echo "game: no game-ports Service" >&2; exit 1; }
+[ "$(grep -c 'protocol: UDP' "$game")" = 2 ] || { echo "game: UDP lost (Service port + container port)" >&2; exit 1; }
+[ "$(grep -c 'tcpSocket:' "$game")" = 3 ] || { echo "game: scheme TCP must give three tcpSocket probes" >&2; exit 1; }
+grep -q 'terminationGracePeriodSeconds: 120' "$game" || { echo "game: grace period missing" >&2; exit 1; }
+if grep -q terminationGracePeriodSeconds out/full.yaml; then echo "full: grace period set without asking" >&2; exit 1; fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.

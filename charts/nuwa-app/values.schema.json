@@ -49,6 +49,23 @@
         }
       }
     },
+    "nodePorts": {
+      "description": "Ports on the node, TCP or UDP, in a Service of their own (<name>-ports).",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "port", "nodePort"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,13}[a-z0-9])?$", "not": { "enum": ["http", "health"] } },
+          "port": { "type": "integer", "minimum": 1024, "maximum": 65535 },
+          "protocol": { "enum": ["TCP", "UDP"] },
+          "targetPort": { "type": "boolean" },
+          "nodePort": { "type": "integer", "minimum": 30000, "maximum": 32767 }
+        }
+      }
+    },
+    "terminationGracePeriodSeconds": { "type": "integer", "minimum": 0, "maximum": 600 },
     "runtimeClassName": {
       "description": "The pods' RuntimeClass (e.g. nvidia for the GPUs), or empty for the default.",
       "type": "string",
@@ -64,7 +81,7 @@
       "additionalProperties": false,
       "properties": {
         "path": { "type": "string", "pattern": "^/" },
-        "scheme": { "enum": ["HTTP", "HTTPS"] },
+        "scheme": { "enum": ["HTTP", "HTTPS", "TCP"] },
         "host": { "type": "string", "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)?$" },
         "readyPath": { "type": "string", "pattern": "^(/.*)?$" },
         "port": { "type": "integer", "minimum": 0, "maximum": 65535 },
