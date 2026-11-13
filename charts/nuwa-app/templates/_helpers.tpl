@@ -23,7 +23,12 @@ meru.clockmost.com/owner: {{ .Values.owner }}
 
 {{/* repository[:tag]@digest - the digest decides what runs (rule 1), the tag is for people. */}}
 {{- define "nuwa-app.image" -}}
-{{ .Values.image.repository }}{{ with .Values.image.tag }}:{{ . }}{{ end }}@{{ .Values.image.digest }}
+{{ include "nuwa-app.imageRef" .Values.image }}
+{{- end }}
+
+{{/* The same for any {repository, digest, tag} - a sidecar's own image. */}}
+{{- define "nuwa-app.imageRef" -}}
+{{ .repository }}{{ with .tag }}:{{ . }}{{ end }}@{{ .digest }}
 {{- end }}
 
 {{/* Whether the workload (Deployment, migration Job, ScaledObject) renders. Not until CI's first build - the digest is
@@ -60,10 +65,15 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{/* The pod spec the Deployment and the CronJob share (job.schedule set = a CronJob: no port, no probes - a job
 runs to its end, rule 6 checks long-running workloads only). Every other rule holds for both. */}}
 {{- /* What a probe does: an HTTP GET on the heartbeat path, or with heartbeat.scheme TCP only a TCP connect (for an app
-with no HTTP at all, e.g. a game server). On the health port when heartbeat.port is set, else on the app's port. */}}
+with no HTTP at all, e.g. a game server). On the health port when heartbeat.port is set, else on the app's port. With
+heartbeat.scheme EXEC a command in the app container (heartbeat.exec), for an app whose health has no port at all. */}}
 {{- define "nuwa-app.probeAction" -}}
 {{- $v := .root.Values -}}
-{{- if eq $v.heartbeat.scheme "TCP" -}}
+{{- if eq $v.heartbeat.scheme "EXEC" -}}
+exec:
+  command:
+    {{- toYaml $v.heartbeat.exec | nindent 4 }}
+{{- else if eq $v.heartbeat.scheme "TCP" -}}
 tcpSocket:
   port: {{ if $v.heartbeat.port }}health{{ else }}http{{ end }}
 {{- else -}}
@@ -96,8 +106,69 @@ securityContext:
   runAsUser: {{ .Values.runAsUser }}
   runAsGroup: {{ .Values.runAsUser }}
   fsGroup: {{ .Values.runAsUser }}
+  {{- with .Values.supplementalGroups }}
+  supplementalGroups: [{{ join ", " . }}]
+  {{- end }}
   seccompProfile:
     type: RuntimeDefault
+{{- with .Values.sidecars }}
+# Native sidecars: init containers that keep running (restartPolicy Always) beside the app, started before it and
+# stopped after it. Same restricted securityContext as the app; their volumeMounts name the pod's own volumes.
+initContainers:
+  {{- range . }}
+  - name: {{ .name }}
+    image: {{ if .image }}{{ include "nuwa-app.imageRef" .image }}{{ else }}{{ include "nuwa-app.image" $ }}{{ end }}
+    restartPolicy: Always
+    {{- with .command }}
+    command:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .args }}
+    args:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .ports }}
+    ports:
+      {{- range . }}
+      - name: {{ .name }}
+        containerPort: {{ .port }}
+      {{- end }}
+    {{- end }}
+    {{- if or .env .secretEnv }}
+    env:
+      {{- range $key, $value := .env }}
+      - name: {{ $key }}
+        value: {{ $value | quote }}
+      {{- end }}
+      {{- with .secretEnv }}
+      {{- include "nuwa-app.secretEnv" . | trim | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- with .startupProbe }}
+    startupProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .livenessProbe }}
+    livenessProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .readinessProbe }}
+    readinessProbe:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    resources:
+      {{- toYaml .resources | nindent 6 }}
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop: [ALL]
+    {{- with .volumeMounts }}
+    volumeMounts:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+  {{- end }}
+{{- end }}
 containers:
   - name: app
     image: {{ include "nuwa-app.image" . }}

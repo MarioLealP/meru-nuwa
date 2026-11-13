@@ -81,7 +81,8 @@
       "additionalProperties": false,
       "properties": {
         "path": { "type": "string", "pattern": "^/" },
-        "scheme": { "enum": ["HTTP", "HTTPS", "TCP"] },
+        "scheme": { "enum": ["HTTP", "HTTPS", "TCP", "EXEC"] },
+        "exec": { "type": "array", "items": { "type": "string" } },
         "host": { "type": "string", "pattern": "^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*)?$" },
         "readyPath": { "type": "string", "pattern": "^(/.*)?$" },
         "port": { "type": "integer", "minimum": 0, "maximum": 65535 },
@@ -89,7 +90,9 @@
         "timeoutSeconds": { "type": "integer", "minimum": 1 },
         "failureThreshold": { "type": "integer", "minimum": 1 },
         "startupFailureThreshold": { "type": "integer", "minimum": 1 }
-      }
+      },
+      "if": { "properties": { "scheme": { "const": "EXEC" } }, "required": ["scheme"] },
+      "then": { "required": ["exec"], "properties": { "exec": { "minItems": 1 } } }
     },
     "command": { "type": "array", "items": { "type": "string" } },
     "args": { "type": "array", "items": { "type": "string" } },
@@ -206,7 +209,8 @@
           "properties": {
             "cpu": { "type": ["string", "number"] },
             "memory": { "type": "string" }
-          }
+          },
+          "patternProperties": { "^[a-z0-9.-]+/[a-z0-9._-]+$": { "type": "integer", "minimum": 1 } }
         },
         "limits": {
           "type": "object",
@@ -215,11 +219,65 @@
           "properties": {
             "cpu": { "type": ["string", "number"] },
             "memory": { "type": "string" }
-          }
+          },
+          "patternProperties": { "^[a-z0-9.-]+/[a-z0-9._-]+$": { "type": "integer", "minimum": 1 } }
         }
       }
     },
     "runAsUser": { "type": "integer", "minimum": 1 },
+    "supplementalGroups": {
+      "description": "Extra groups for the pod's processes (securityContext.supplementalGroups), e.g. a device's group.",
+      "type": "array",
+      "items": { "type": "integer", "minimum": 1 }
+    },
+    "sidecars": {
+      "description": "Native sidecars: init containers with restartPolicy Always beside the app, restricted like it.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "resources"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,40}[a-z0-9])?$", "not": { "const": "app" } },
+          "image": { "$ref": "#/properties/image" },
+          "command": { "type": "array", "items": { "type": "string" } },
+          "args": { "type": "array", "items": { "type": "string" } },
+          "env": { "$ref": "#/definitions/env" },
+          "secretEnv": { "$ref": "#/definitions/secretEnv" },
+          "resources": { "$ref": "#/properties/resources" },
+          "ports": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "port"],
+              "properties": {
+                "name": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,13}[a-z0-9])?$", "not": { "enum": ["http", "health"] } },
+                "port": { "type": "integer", "minimum": 1024, "maximum": 65535 }
+              }
+            }
+          },
+          "volumeMounts": {
+            "description": "Mounts of the pod's own volumes: tmp, a persistence name, cm-<name>, es-<name>, tls, ...",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["name", "mountPath"],
+              "properties": {
+                "name": { "type": "string", "minLength": 1 },
+                "mountPath": { "type": "string", "pattern": "^/" },
+                "subPath": { "type": "string" },
+                "readOnly": { "type": "boolean" }
+              }
+            }
+          },
+          "startupProbe": { "$ref": "#/definitions/probe" },
+          "livenessProbe": { "$ref": "#/definitions/probe" },
+          "readinessProbe": { "$ref": "#/definitions/probe" }
+        }
+      }
+    },
     "tmp": {
       "type": "object",
       "additionalProperties": false,
@@ -307,6 +365,11 @@
     "global": { "type": "object" }
   },
   "definitions": {
+    "probe": {
+      "description": "A Kubernetes probe, as is: one of exec / tcpSocket / httpGet / grpc, plus its timings.",
+      "type": "object",
+      "minProperties": 1
+    },
     "env": {
       "type": "object",
       "propertyNames": { "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },

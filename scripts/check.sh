@@ -92,6 +92,22 @@ grep -q '^  name: game-ports$' "$game" || { echo "game: no game-ports Service" >
 grep -q 'terminationGracePeriodSeconds: 120' "$game" || { echo "game: grace period missing" >&2; exit 1; }
 if grep -q terminationGracePeriodSeconds out/full.yaml; then echo "full: grace period set without asking" >&2; exit 1; fi
 
+echo "== sidecars: native (initContainers, restartPolicy Always), restricted like the app; supplementalGroups; EXEC probes"
+side=$(sed -n '/^kind: Deployment$/,/^---$/p' out/sidecar.yaml)
+init=$(sed -n '/^      initContainers:$/,/^      containers:$/p' <<<"$side")
+[ "$(grep -c '^        - name: ' <<<"$init")" = 2 ] || { echo "sidecar: expected 2 init containers" >&2; exit 1; }
+[ "$(grep -c '^          restartPolicy: Always$' <<<"$init")" = 2 ] || { echo "sidecar: a sidecar without restartPolicy Always" >&2; exit 1; }
+for want in '            allowPrivilegeEscalation: false' '            readOnlyRootFilesystem: true' '              drop: \[ALL\]'; do
+  [ "$(grep -cx "$want" <<<"$init")" = 2 ] || { echo "sidecar: not every sidecar has: $want" >&2; exit 1; }
+done
+grep -qx '          image: zot.clockmost.com/meru/printer@sha256:a\{64\}' <<<"$init" || { echo "sidecar: no default to the app image" >&2; exit 1; }
+grep -qx '              clockmost.com/ender: 1' <<<"$init" || { echo "sidecar: the device's extended resource is lost" >&2; exit 1; }
+grep -qx '        supplementalGroups: \[986\]' <<<"$side" || { echo "sidecar: supplementalGroups missing" >&2; exit 1; }
+app=$(sed -n '/^      containers:$/,$p' <<<"$side")
+[ "$(grep -c '^            exec:$' <<<"$app")" = 3 ] || { echo "sidecar: heartbeat EXEC must give three exec probes" >&2; exit 1; }
+if grep -q 'httpGet:' <<<"$app"; then echo "sidecar: an httpGet probe beside EXEC" >&2; exit 1; fi
+if grep -qE 'initContainers|supplementalGroups' out/full.yaml; then echo "full: sidecars/supplementalGroups set without asking" >&2; exit 1; fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.
