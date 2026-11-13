@@ -1,0 +1,71 @@
+# A printer (0.28.0): Moonraker is the app; Klipper is a native sidecar from the same image holding the USB serial
+# port a device plugin hands in (an extended resource), the two talking over a unix socket on the shared data volume.
+# The app's health is a command (heartbeat EXEC); the pod joins the device's group (supplementalGroups).
+name: printer
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/printer
+  digest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+port: 7125
+heartbeat:
+  scheme: EXEC
+  exec: [curl, -fsS, http://127.0.0.1:7125/server/info]
+supplementalGroups: [986]
+persistence:
+  - name: data
+    mountPath: /data
+    size: 1Gi
+sidecars:
+  - name: klipper
+    command: [klippy]
+    args: [/data/config/printer.cfg, -a, /data/comms/klippy.sock]
+    env:
+      KLIPPER_LOG: /data/logs/klippy.log
+    secretEnv:
+      KLIPPER_TOKEN:
+        secret: printer-config
+        key: token
+    ports:
+      - name: metrics
+        port: 9100
+    volumeMounts:
+      - name: data
+        mountPath: /data
+      - name: tmp
+        mountPath: /tmp
+        subPath: klipper
+    startupProbe:
+      exec:
+        command: [test, -S, /data/comms/klippy.sock]
+      periodSeconds: 2
+      failureThreshold: 30
+    livenessProbe:
+      exec:
+        command: [test, -S, /data/comms/klippy.sock]
+      periodSeconds: 10
+    resources:
+      requests:
+        cpu: 100m
+        memory: 64Mi
+      limits:
+        memory: 256Mi
+        clockmost.com/ender: 1
+  - name: helper
+    image:
+      repository: zot.clockmost.com/meru/helper
+      digest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+      tag: v1
+    resources:
+      requests:
+        cpu: 10m
+        memory: 16Mi
+      limits:
+        memory: 32Mi
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+networkPolicy:
+  enabled: true

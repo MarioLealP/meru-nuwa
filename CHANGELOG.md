@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.28.0
+
+### Added
+- `sidecars`: native sidecars (init containers with `restartPolicy: Always`) - more containers in the app's pod that
+  start before it and run beside it, e.g. Klipper next to Moonraker over a unix socket on the shared data volume. Each
+  has a name, its own resources (rule 5), and optionally an image (default: the app's), command, args, env, secretEnv,
+  ports, volumeMounts (of the pod's own volumes) and raw probes. Every sidecar gets the app's restricted container
+  securityContext, not overridable.
+- `supplementalGroups`: extra groups for the pod (e.g. the group owning a device a device plugin hands in).
+- `heartbeat.scheme: EXEC` with `heartbeat.exec`: the three probes run a command in the app container.
+
+### Changed
+- `resources` (the app's and a sidecar's) accepts extended resources (`<domain>/<name>: <integer>`, e.g.
+  `clockmost.com/ender: 1` from a device plugin); the schema refused them before.
+
+Apps that set none of these render byte-for-byte as in 0.27.0 (all 36 Meru apps checked).
+
 ## nuwa-app 0.27.0
 
 ### Added

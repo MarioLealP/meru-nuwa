@@ -62,7 +62,8 @@ terminationGracePeriodSeconds: 0
 # Every app answers GET /heartbeat with 200 when it's alive. Startup gets longer grace than liveness.
 heartbeat:
   path: /heartbeat
-  scheme: HTTP # HTTPS for an app that only serves TLS (the kubelet doesn't check the certificate); TCP = only a TCP connect, for an app with no HTTP (path unused)
+  scheme: HTTP # HTTPS for an app that only serves TLS (the kubelet doesn't check the certificate); TCP = only a TCP connect, for an app with no HTTP (path unused); EXEC = run `exec` below in the app container
+  exec: [] # with scheme EXEC: the command and its args, e.g. [curl, -fsS, --unix-socket, /data/app.sock, http://x/health]; exit 0 = healthy
   host: "" # the Host header the probes send, for an app that refuses other hosts (Django's ALLOWED_HOSTS); default: the pod's IP
   port: 0 # a separate plain port the probes use, for an app whose own port demands client certs (drive-rag); not in the Service
   readyPath: "" # readiness, when the app has its own "can serve" check (e.g. its database answers); default: path
@@ -186,6 +187,33 @@ resources:
 
 # The image must run as a numeric non-root user; this is the one Kubernetes enforces.
 runAsUser: 10001
+# Extra groups the pod's processes belong to (the pod's securityContext.supplementalGroups), e.g. the group that owns a
+# device a device plugin hands in (dialout for a USB serial port). Restricted Pod Security allows them.
+supplementalGroups: []
+
+# Native sidecars (Kubernetes 1.29+): more containers in the app's pod that start before the app and keep running
+# beside it (init containers with restartPolicy Always), e.g. Klipper next to Moonraker sharing a socket on the data
+# volume. Each gets the app container's restricted securityContext (not overridable) and must state its resources
+# (rule 5). image: default the app's own image (same repository/digest), otherwise {repository, digest, tag}.
+# volumeMounts name volumes the pod already has: tmp, a persistence name, cm-<configMap name>, es-<externalSecret name
+# with dots as dashes>, tls, openbao, authentik, kubernetes-api. Probes are plain Kubernetes probe objects (exec,
+# tcpSocket, httpGet). A device from a device plugin is asked for in resources (e.g. clockmost.com/ender: 1).
+sidecars: []
+#  - name: klipper
+#    command: [klippy]
+#    args: [/data/printer.cfg, -a, /data/klippy.sock]
+#    env: {}
+#    secretEnv: {}
+#    ports: [] # [{name, port}]
+#    volumeMounts:
+#      - name: data
+#        mountPath: /data
+#    livenessProbe:
+#      exec:
+#        command: [test, -S, /data/klippy.sock]
+#    resources:
+#      requests: {cpu: 50m, memory: 64Mi}
+#      limits: {memory: 256Mi, clockmost.com/ender: 1}
 
 # Writable scratch at /tmp - the root filesystem is read-only.
 tmp:
