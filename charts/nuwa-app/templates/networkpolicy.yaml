@@ -91,16 +91,20 @@ own policy must let this one in (its fromNamespaces). */}}
             operator: In
             values: {{ toJson . }}
 {{- end }}
-{{- /* toAddresses: one rule per entry - that address range, only those TCP ports. For a private address egress
-internet leaves out, e.g. Caddy on the host for Authentik's keys. */}}
+{{- /* toAddresses: one rule per entry - that address range, only those ports over the entry's protocol (TCP unless
+it says UDP or SCTP). No ports: every port and protocol to that range, ICMP included (NetworkPolicy has no ICMP
+protocol, and a rule without ports allows them all). For a private address egress internet leaves out, e.g. Caddy on
+the host for Authentik's keys, or a router's SNMP. */}}
 {{- define "nuwa-app.egressToAddresses" -}}
-{{- range . }}
+{{- range $entry := . }}
 - to:
     - ipBlock:
-        cidr: {{ .cidr }}
+        cidr: {{ $entry.cidr }}
+  {{- with $entry.ports }}
   ports:
-    {{- range .ports }}
-    - { protocol: TCP, port: {{ . }} }
+    {{- range . }}
+    - { protocol: {{ $entry.protocol | default "TCP" }}, port: {{ . }} }
     {{- end }}
+  {{- end }}
 {{- end }}
 {{- end }}

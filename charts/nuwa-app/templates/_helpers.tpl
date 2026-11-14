@@ -94,6 +94,7 @@ httpGet:
 {{- define "nuwa-app.podSpec" -}}
 serviceAccountName: {{ .Values.name }}
 automountServiceAccountToken: false
+enableServiceLinks: {{ .Values.serviceLinks }}
 {{- with .Values.terminationGracePeriodSeconds }}
 terminationGracePeriodSeconds: {{ . }}
 {{- end }}

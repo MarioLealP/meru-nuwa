@@ -108,6 +108,26 @@ app=$(sed -n '/^      containers:$/,$p' <<<"$side")
 if grep -q 'httpGet:' <<<"$app"; then echo "sidecar: an httpGet probe beside EXEC" >&2; exit 1; fi
 if grep -qE 'initContainers|supplementalGroups' out/full.yaml; then echo "full: sidecars/supplementalGroups set without asking" >&2; exit 1; fi
 
+echo "== toAddresses: TCP by default, UDP when asked, every protocol (ICMP too) without ports"
+eg=$(sed -n '/^  egress:/,/^  ingress:/p' out/lan-monitor.yaml)
+for want in '            cidr: 192.168.10.0/24' '        - { protocol: TCP, port: 10050 }' '        - { protocol: TCP, port: 6443 }' \
+  '            cidr: 192.168.10.1/32' '        - { protocol: UDP, port: 161 }' '            cidr: 192.168.10.110/32'; do
+  grep -qx -- "$want" <<<"$eg" || { echo "lan-monitor: missing line: $want" >&2; exit 1; }
+done
+[ "$(grep -c '^      ports:$' <<<"$eg")" = 3 ] || { echo "lan-monitor: expected ports on DNS + the two ported entries only" >&2; exit 1; }
+last=$(sed -n '/cidr: 192.168.10.110\/32/,$p' <<<"$eg")
+if grep -q 'ports:' <<<"$last"; then echo "lan-monitor: the ports-less entry has ports" >&2; exit 1; fi
+
+echo "== service links: off on every pod unless asked"
+for f in out/*.yaml; do
+  pods=$(grep -cE '^ *containers:$' "$f" || true)
+  off=$(grep -cE '^ *enableServiceLinks: false$' "$f" || true)
+  on=$(grep -cE '^ *enableServiceLinks: true$' "$f" || true)
+  [ "$((off + on))" = "$pods" ] || { echo "$f: $pods pod specs but $((off + on)) enableServiceLinks" >&2; exit 1; }
+  if [ "$f" = out/lan-monitor.yaml ]; then want_on=$pods; else want_on=0; fi
+  [ "$on" = "$want_on" ] || { echo "$f: enableServiceLinks true $on times, expected $want_on" >&2; exit 1; }
+done
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.

@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.29.0
+
+### Added
+- `networkPolicy.toAddresses[].protocol`: `TCP` (default, as before), `UDP` or `SCTP`, for every port of that entry -
+  e.g. `{cidr: 192.168.10.1/32, protocol: UDP, ports: [161]}` for a router's SNMP. Needs `ports`.
+- `networkPolicy.toAddresses[].ports` is optional: an entry without it allows every port and protocol to that range,
+  ICMP (ping) included - NetworkPolicy has no ICMP protocol, and a rule with no ports allows them all (k3s's policy
+  controller, kube-router, enforces it that way too). For Zabbix pinging LAN hosts.
+- `serviceLinks`: turns Kubernetes' service-link env vars back on for an app that wants them (default `false`).
+
+### Changed
+- Every pod the chart renders (Deployment, CronJob, migrate Job) now sets `enableServiceLinks: false`: no more
+  `<SERVICE>_PORT=tcp://...` style env vars for the namespace's Services. Meru apps find each other by DNS, and the vars
+  can collide with app settings - Immich crash-looped on `IMMICH_PORT` (2026-11-13). An app that read one of those vars
+  must set `serviceLinks: true` or use DNS. The pod template changes, so each app's pods restart once on moving to
+  0.29.0.
+
+Apart from `enableServiceLinks: false` on each pod, apps that set none of these render byte-for-byte as in 0.28.0
+(all 41 Meru apps checked).
+
 ## nuwa-app 0.28.0
 
 ### Added
