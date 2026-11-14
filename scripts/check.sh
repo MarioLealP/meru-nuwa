@@ -128,6 +128,14 @@ for f in out/*.yaml; do
   [ "$on" = "$want_on" ] || { echo "$f: enableServiceLinks true $on times, expected $want_on" >&2; exit 1; }
 done
 
+echo "== servicePorts: on the app's own Service and container, which stays ClusterIP"
+svc=$(helm template minimal "$chart" -n test -f "$chart/ci/minimal-values.yaml" \
+  --set 'servicePorts[0].name=metrics' --set 'servicePorts[0].port=9300' --show-only templates/service.yaml)
+if grep -q 'NodePort' <<<"$svc" || ! grep -q 'targetPort: metrics' <<<"$svc"; then
+  echo "servicePorts: expected a ClusterIP Service with a metrics port" >&2
+  exit 1
+fi
+
 if [ -n "$policies" ]; then
   echo "== kyverno"
   # One case at a time: the cases share resource names, and the CLI's fake cluster refuses duplicates.

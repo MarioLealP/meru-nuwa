@@ -25,4 +25,9 @@ spec:
       targetPort: {{ .name }}
       nodePort: {{ .nodePort }}
     {{- end }}
+    {{- range .Values.servicePorts }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .name }}
+    {{- end }}
 {{- end }}

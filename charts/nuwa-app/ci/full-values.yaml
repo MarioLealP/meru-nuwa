@@ -13,6 +13,9 @@ extraPorts:
   - name: ssh
     port: 2222
     nodePort: 30222
+servicePorts:
+  - name: metrics
+    port: 9300
 command: [python]
 args: [-m, echo]
 env:

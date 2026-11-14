@@ -193,6 +193,10 @@ containers:
       - name: {{ .name }}
         containerPort: {{ .port }}
       {{- end }}
+      {{- range .Values.servicePorts }}
+      - name: {{ .name }}
+        containerPort: {{ .port }}
+      {{- end }}
       {{- range .Values.nodePorts }}
       {{- if not .targetPort }}
       - name: {{ .name }}

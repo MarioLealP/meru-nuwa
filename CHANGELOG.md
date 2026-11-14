@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.30.0
+
+### Added
+- `servicePorts`: more ports on the app's own Service, inside the cluster only (it stays ClusterIP), each also a named
+  container port on the app - e.g. Authentik's metrics on 9300 for the host's Zabbix agent at the fixed clusterIP.
+  `extraPorts` would have made the Service a NodePort.
+
+Apps that don't set it render byte-for-byte as in 0.29.0.
+
 ## nuwa-app 0.29.0
 
 ### Added
