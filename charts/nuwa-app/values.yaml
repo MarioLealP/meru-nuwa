@@ -47,6 +47,13 @@ extraPorts: []
 #    port: 2222
 #    nodePort: 30222
 
+# More ports on the app's own Service, inside the cluster only (it stays ClusterIP) - e.g. a metrics endpoint the host's
+# Zabbix agent scrapes at the fixed clusterIP. Each is also a named port on the app container. No node exposure: for
+# that, nodePorts. Callers still need the networkPolicy to let them in (fromHost / fromNamespaces).
+servicePorts: []
+#  - name: metrics
+#    port: 9300
+
 # Ports on the node for players and other non-HTTP clients, TCP or UDP, in a Service of their own (<name>-ports): the
 # app's own Service stays ClusterIP, so its other ports (e.g. a game's RCON) are never on the node. targetPort: the
 # port is the app's main one (port above) - no extra container port; otherwise a container port named <name> is added.

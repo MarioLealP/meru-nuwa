@@ -49,6 +49,19 @@
         }
       }
     },
+    "servicePorts": {
+      "description": "More ports on the app's own Service, cluster-only (ClusterIP); each also a named container port.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "port"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,13}[a-z0-9])?$", "not": { "enum": ["http", "health"] } },
+          "port": { "type": "integer", "minimum": 1024, "maximum": 65535 }
+        }
+      }
+    },
     "nodePorts": {
       "description": "Ports on the node, TCP or UDP, in a Service of their own (<name>-ports).",
       "type": "array",
