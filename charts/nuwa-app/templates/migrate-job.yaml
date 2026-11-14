@@ -25,6 +25,7 @@ spec:
       # The namespace's default account, not the app's: PreSync runs before the app's ServiceAccount exists on a
       # first install, and migrations need no Kubernetes identity anyway (no token is mounted).
       automountServiceAccountToken: false
+      enableServiceLinks: {{ .Values.serviceLinks }}
       securityContext:
         runAsNonRoot: true
         runAsUser: {{ .Values.runAsUser }}

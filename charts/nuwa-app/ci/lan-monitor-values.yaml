@@ -1,0 +1,18 @@
+# An app that watches the LAN (Zabbix's server): egress none + toAddresses over TCP (the default), UDP (SNMP) and
+# every protocol (ping); Kubernetes' service links turned back on.
+name: zabbix
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/zabbix
+  digest: sha256:6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e6e
+serviceLinks: true
+networkPolicy:
+  enabled: true
+  egress: none
+  toAddresses:
+    - cidr: 192.168.10.0/24
+      ports: [10050, 6443]
+    - cidr: 192.168.10.1/32
+      protocol: UDP
+      ports: [161]
+    - cidr: 192.168.10.110/32

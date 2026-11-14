@@ -36,6 +36,9 @@ clusterIP: ""
 # when the NVIDIA container toolkit is on the node) gives the pod the GPUs named in env NVIDIA_VISIBLE_DEVICES
 # (`all` = every card, shared with other pods, as on compose) - no device plugin, so no whole-card-per-pod split.
 runtimeClassName: ""
+# Kubernetes' service links: env vars like <SERVICE>_PORT=tcp://10.43.x.y:80 for every Service in the namespace. Off:
+# Meru apps find each other by DNS, and the vars collide with app settings (Immich's IMMICH_PORT crash-looped it).
+serviceLinks: false
 # Ports that aren't the app's HTTP, reached from outside the cluster on the node (Caddy only forwards HTTP). Any entry
 # makes the Service a NodePort, and the node's firewall still has to let it in. The port's traffic reaches the pod from
 # the node's address, so a networkPolicy needs fromHost.
@@ -255,8 +258,10 @@ networkPolicy:
   # With egress none or internet: also the pods of these apps (their namespaces), plus DNS - e.g. [felt-llm] for
   # poe2rag. The other app's policy must let this one in (its fromNamespaces).
   toNamespaces: []
-  # With egress none or internet: also these addresses, only the listed TCP ports - e.g. Caddy on the host
-  # ({cidr: 192.168.10.110/32, ports: [443]}) for Authentik's keys and tokens.
+  # With egress none or internet: also these addresses, only the listed ports, over TCP unless the entry's protocol
+  # says UDP or SCTP - e.g. Caddy on the host ({cidr: 192.168.10.110/32, ports: [443]}) for Authentik's keys and
+  # tokens, or a router's SNMP ({cidr: 192.168.10.1/32, protocol: UDP, ports: [161]}). An entry without ports allows
+  # every port and protocol to that range, ICMP (ping) included - NetworkPolicy has no ICMP protocol of its own.
   toAddresses: []
 
 # Traces go to OpenObserve. The chart names the service; the exporter endpoint is set once the app has its
