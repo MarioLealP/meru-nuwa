@@ -33,11 +33,10 @@ with the app repo's values; nothing runs `helm install`.
 
 ## Development
 
-Prerequisites: `helm` 4, `kubeconform`, and optionally the Kyverno CLI with a checkout of Meru's policies.
+Prerequisites: `helm` 4 and `kubeconform`.
 
 ```sh
-scripts/check.sh                                    # lint + render every ci/*-values.yaml + schema-validate
-scripts/check.sh ../clockmost-infra/k8s/kyverno-policies   # ... and run Meru's admission rules on the output
+scripts/check.sh   # lint + render every ci/*-values.yaml + schema-validate
 ```
 
 Each `charts/nuwa-app/ci/*-values.yaml` is a test case. Commits follow Conventional Commits; changes go in through

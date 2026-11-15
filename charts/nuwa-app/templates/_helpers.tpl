@@ -32,7 +32,7 @@ meru.clockmost.com/owner: {{ .Values.owner }}
 {{- end }}
 
 {{/* Whether the workload (Deployment, migration Job, ScaledObject) renders. Not until CI's first build - the digest is
-the template's all-zero placeholder, Kyverno would refuse it (no signature) and Argo CD would keep retrying that revision
+the template's all-zero placeholder, which can't be pulled, and Argo CD would keep retrying that revision
 instead of taking the build's digest commit - and not once the app is retired (`enabled: false`, D84: Shikigami's last
 commit before it archives the repo; the pods stop on the next sync). Everything else (Service, volumes, secrets, ...)
 renders either way, until Charon purges the namespace. */}}
