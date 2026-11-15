@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.31.0
+
+### Changed
+- `reloadsSecrets: true` also sets `reloader.stakater.com/auto: "false"` on the Deployment: Meru dropped Kyverno
+  (2026-11-15) and Reloader now does the restart on a Secret change. An app on an older chart that sets
+  `reloadsSecrets` is skipped by namespace in Meru/meru's `platform/reloader.yaml` until it moves to 0.31.0+.
+
+### Removed
+- `scripts/check.sh` no longer takes a Kyverno policies dir.
+
+Apps that don't set `reloadsSecrets` render byte-for-byte as in 0.30.0.
+
 ## nuwa-app 0.30.0
 
 ### Added
