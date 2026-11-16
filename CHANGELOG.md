@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.32.0
+
+### Changed (breaking for apps that relied on the defaults)
+- `networkPolicy.enabled` defaults to `true` and `networkPolicy.egress` to `none`: every app gets a NetworkPolicy,
+  closed both ways - only the node gets in, nothing goes out (not even DNS) until the app lists `toNamespaces` /
+  `toAddresses`, or says `egress: internet`. `egress: allow` and `enabled: false` still work, as explicit choices.
+- `networkPolicy.hostAddresses` defaults to `[10.42.0.1/32]` (the node). Docker's `172.16.0.0/12` is gone: Caddy and
+  Gitea run on the host since 2026-11-14 and reach pods from the node's address.
+
+Moving an app to 0.32.0: if its values don't set `networkPolicy.enabled` and `networkPolicy.egress`, write down what
+it calls first (or set `egress: allow` to keep today's behaviour). Apps that set both render as in 0.31.0, except for
+the default `hostAddresses`.
+
 ## nuwa-app 0.31.0
 
 ### Changed

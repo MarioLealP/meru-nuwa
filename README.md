@@ -13,6 +13,7 @@ What the chart builds into every app:
 - startup, liveness and readiness probes on the app's `/heartbeat` endpoint
 - the CMDB labels: `app.kubernetes.io/name`, `app.kubernetes.io/part-of`, `meru.clockmost.com/owner`
 - OpenTelemetry service naming, so traces land in OpenObserve under the app's name
+- a NetworkPolicy, closed by default: only the node gets in, nothing goes out until the app lists it
 - optional volumes on the `local` (SSD) or `hdd` storage class
 
 ## Usage

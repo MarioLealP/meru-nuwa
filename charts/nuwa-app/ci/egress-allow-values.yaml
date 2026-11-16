@@ -1,0 +1,8 @@
+# An app that still opens connections anywhere (egress allow) - the pre-0.32 behaviour, kept as an explicit choice.
+name: echo
+owner: mario
+image:
+  repository: zot.clockmost.com/meru/echo
+  digest: sha256:5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f
+networkPolicy:
+  egress: allow
