@@ -1,0 +1,2 @@
+# zabbix's namespace: zabbix-web reads its database.
+databaseClients: [zabbix-web]
