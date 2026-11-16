@@ -42,6 +42,18 @@ scripts/check.sh   # lint + render every ci/*-values.yaml + schema-validate
 Each `charts/nuwa-app/ci/*-values.yaml` is a test case. Commits follow Conventional Commits; changes go in through
 pull requests to `main`.
 
+## Renovate
+
+`renovate/meru.json` is the Renovate policy every Meru app repo shares: one weekly PR of routine updates, the
+`nuwa-app` chart release in `deploy/meru.yaml` on its own PR, majors one PR each, our own `zot.clockmost.com/meru/`
+images left to CI. A repo opts in with a `renovate.json` of just:
+
+```json
+{ "extends": ["local>Meru/nuwa//renovate/meru"] }
+```
+
+`buildLabels` images are only updated when written as `image:tag@sha256:digest`.
+
 ## License
 
 MIT - see `LICENSE`.

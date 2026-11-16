@@ -1,0 +1,114 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate policy shared by every Meru app repo. A repo opts in with a renovate.json of just {\"extends\": [\"local>Meru/nuwa//renovate/meru\"]}.",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":disableDependencyDashboard"
+  ],
+  "timezone": "Europe/Lisbon",
+  "schedule": [
+    "* 0-5 * * 0"
+  ],
+  "minimumReleaseAge": "7 days",
+  "pinDigests": true,
+  "labels": [
+    "renovate"
+  ],
+  "prConcurrentLimit": 4,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The nuwa-app chart release an app deploys with (deploy/meru.yaml, and per environment).",
+      "managerFilePatterns": [
+        "/^deploy/meru\\.yaml$/",
+        "/^deploy/envs/[^/]+/meru\\.yaml$/"
+      ],
+      "matchStrings": [
+        "(?m)^chart: nuwa-app-(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "depNameTemplate": "Meru/nuwa",
+      "datasourceTemplate": "gitea-tags",
+      "registryUrlTemplate": "https://git.clockmost.com",
+      "extractVersionTemplate": "^nuwa-app-(?<version>\\d+\\.\\d+\\.\\d+)$",
+      "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "description": "Images of extra runner labels (deploy/meru.yaml buildLabels), written as image:tag@sha256:digest.",
+      "managerFilePatterns": [
+        "/^deploy/meru\\.yaml$/"
+      ],
+      "matchStrings": [
+        "(?m)^\\s+sindri-[a-z0-9-]+: (?<depName>[^\\s:@]+(?::\\d+)?/[^\\s:@]+):(?<currentValue>[^\\s@]+)@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "description": "Dockerfile ARG *_VERSION pins with a '# renovate:' line right above them.",
+      "managerFilePatterns": [
+        "/(^|/)Dockerfile$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)( extractVersion=(?<extractVersion>\\S+))?\\s+ARG [A-Z0-9_]+_VERSION=(?<currentValue>\\S+)"
+      ],
+      "extractVersionTemplate": "{{#if extractVersion}}{{{extractVersion}}}{{else}}^v?(?<version>.*)${{/if}}"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Our own images (zot.clockmost.com/meru/...) are written by CI after each build - never by Renovate.",
+      "matchPackageNames": [
+        "zot.clockmost.com/meru/**"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Routine updates in one weekly PR per repo.",
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "digest",
+        "pin",
+        "pinDigest"
+      ],
+      "groupName": "meru auto updates"
+    },
+    {
+      "description": "The chart on its own PR, without the 7-day wait (our own release): it changes what the platform renders, not the app's code.",
+      "matchDepNames": [
+        "Meru/nuwa"
+      ],
+      "groupName": "nuwa-app chart",
+      "addLabels": [
+        "chart"
+      ],
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "Majors one PR each, marked for a closer look.",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "addLabels": [
+        "major-review"
+      ]
+    },
+    {
+      "description": "CUDA bases stay manual: the version is an ARG shared by two FROMs, which Renovate can't rewrite, and it is tied to the GPUs' compute capability.",
+      "matchPackageNames": [
+        "nvidia/cuda",
+        "docker.io/nvidia/cuda"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "requires-python is a floor, not a dependency - raised by hand.",
+      "matchDepTypes": [
+        "requires-python"
+      ],
+      "enabled": false
+    }
+  ]
+}
