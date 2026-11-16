@@ -4,7 +4,7 @@
 name: "" # required; app.kubernetes.io/name, also the resource names
 owner: "" # required; meru.clockmost.com/owner (a person or team)
 partOf: meru # app.kubernetes.io/part-of
-# false = retired (D84): the workload stops (no Deployment / migration Job / ScaledObject); the rest stays until Charon
+# false = retired: the workload stops (no Deployment / migration Job / ScaledObject); the rest stays until Charon
 # purges it. Shikigami sets it in the app's last commit before archiving the repo.
 enabled: true
 
@@ -15,7 +15,7 @@ image:
 
 replicas: 1 # ignored while autoscaling is on - KEDA owns the count then
 
-# A scheduled job instead of a long-running service (D107): `schedule` set = a CronJob, no Deployment, no Service,
+# A scheduled job instead of a long-running service: `schedule` set = a CronJob, no Deployment, no Service,
 # no port or probes. The pod is otherwise the same (rules, secrets, OpenBao/Kubernetes logins). Zabbix watches the
 # CronJob's last successful run.
 job:
@@ -95,7 +95,7 @@ secretEnv: {}
 #    secret: myapp-db-runtime
 #    key: password
 
-# Secrets ESO fills from OpenBao (D66), name -> settings. The values live at apps/meru/<namespace>/eso/<name> and
+# Secrets ESO fills from OpenBao, name -> settings. The values live at apps/meru/<namespace>/eso/<name> and
 # every key there becomes a key of the Secret. Shikigami writes them.
 externalSecrets: {}
 #  myapp-db-runtime:
@@ -108,7 +108,7 @@ externalSecrets: {}
 #        client_secret: {{ .client_secret }}
 
 # Where ESO (and cert-manager, for certificate below) log in: OpenBao's Kubernetes login, shared roles meru-eso /
-# meru-certs, which reach this namespace's own paths and names only (D71).
+# meru-certs, which reach this namespace's own paths and names only.
 openbao:
   addr: https://openbao.clockmost.internal:8204
   refreshInterval: 5m # how often ESO re-reads; a rotation reaches files then, env vars on the next restart
@@ -126,7 +126,7 @@ openbao:
     AwqvzZjfzlr4WU9o
     -----END CERTIFICATE-----
 
-# A TLS certificate for the app's in-cluster names, <name>.<namespace>.svc and .svc.cluster.local (D71), from
+# A TLS certificate for the app's in-cluster names, <name>.<namespace>.svc and .svc.cluster.local, from
 # OpenBao's pki_meru through cert-manager, which renews it before it expires. Usable as server and as client (mTLS,
 # e.g. to Temporal). Mounted read-only at mountPath: tls.crt, tls.key, ca.crt; a renewal replaces the files in
 # place, so the app re-reads them when it (re)connects.
@@ -137,7 +137,7 @@ certificate:
   mountPath: /var/run/meru/tls
   keyEncoding: "" # PKCS8 for a server that only reads that (granian: GlitchTip); default: cert-manager's own (PKCS1/SEC1)
 
-# The app's own OpenBao login, for an app that writes to OpenBao itself (Shikigami, D79) - everyone else reads through
+# The app's own OpenBao login, for an app that writes to OpenBao itself (Shikigami) - everyone else reads through
 # externalSecrets above. Mounted read-only at mountPath: `token`, a service-account token meant for OpenBao only
 # (audience openbao, 10 minutes, the kubelet swaps in a fresh one before it runs out), and `ca.crt`, OpenBao's CA.
 # The app logs in at <openbao.addr>/v1/auth/kubernetes/login with the role OpenBao's admin bound to this service
@@ -146,7 +146,7 @@ openbaoLogin:
   enabled: false
   mountPath: /var/run/meru/openbao
 
-# The app's own Authentik login (D104), for an app that calls a Meru service with Authentik tokens (Thoth, Temporal):
+# The app's own Authentik login, for an app that calls a Meru service with Authentik tokens (Thoth, Temporal):
 # no app password - the pod sends this token as its client_credentials assertion and Authentik checks it against the
 # cluster's signing key. Mounted read-only at mountPath: `token`, a service-account token meant for Authentik only
 # (audience authentik, 1 hour, the kubelet swaps in a fresh one before it runs out). It opens only what a protected
@@ -155,15 +155,15 @@ authentikLogin:
   enabled: false
   mountPath: /var/run/meru/authentik
 
-# The app's own Kubernetes API token, for an app that reads the cluster itself (Shikigami reads Argo CD Applications,
-# D85) - every other pod has none (automountServiceAccountToken stays false). Mounted read-only at mountPath: `token`,
+# The app's own Kubernetes API token, for an app that reads the cluster itself (Shikigami reads Argo CD Applications)
+# - every other pod has none (automountServiceAccountToken stays false). Mounted read-only at mountPath: `token`,
 # a service-account token for the API server (10 minutes, renewed by the kubelet), and `ca.crt`, the cluster's CA. It
 # can do only what RBAC grants this service account - by default nothing; Meru/meru's rbac/ holds each exact grant.
 kubernetesApi:
   enabled: false
   mountPath: /var/run/meru/kubernetes
 
-# Scale on the app's own backlog with KEDA (D75): KEDA polls GET <path> on the app's Service from inside the cluster
+# Scale on the app's own backlog with KEDA: KEDA polls GET <path> on the app's Service from inside the cluster
 # (no credentials) and keeps one replica per `targetValue` waiting items, between min and max. The app answers JSON
 # with the number at `valueLocation`, e.g. {"backlog": 12}. Stateless apps only - every replica must be able to take
 # any work.
@@ -204,7 +204,7 @@ supplementalGroups: []
 # Native sidecars (Kubernetes 1.29+): more containers in the app's pod that start before the app and keep running
 # beside it (init containers with restartPolicy Always), e.g. Klipper next to Moonraker sharing a socket on the data
 # volume. Each gets the app container's restricted securityContext (not overridable) and must state its resources
-# (rule 5). image: default the app's own image (same repository/digest), otherwise {repository, digest, tag}.
+# (requests + a memory limit, like the app). image: default the app's own image (same repository/digest), otherwise {repository, digest, tag}.
 # volumeMounts name volumes the pod already has: tmp, a persistence name, cm-<configMap name>, es-<externalSecret name
 # with dots as dashes>, tls, openbao, authentik, kubernetes-api. Probes are plain Kubernetes probe objects (exec,
 # tcpSocket, httpGet). A device from a device plugin is asked for in resources (e.g. clockmost.com/ender: 1).
@@ -277,7 +277,7 @@ otel:
   enabled: true
   endpoint: ""
 
-# Crash reports to GlitchTip (D125): the app's DSN, which Shikigami writes here at onboarding. Plain config, not a
+# Crash reports to GlitchTip: the app's DSN, which Shikigami writes here at onboarding. Plain config, not a
 # secret - the key only sends reports, and GlitchTip is LAN + VPN only. Set: the pod gets SENTRY_DSN, which the Sentry
 # SDK reads. Empty: no SENTRY_DSN, the SDK stays off.
 glitchtip:

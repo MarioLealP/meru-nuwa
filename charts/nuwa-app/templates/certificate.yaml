@@ -1,7 +1,7 @@
 {{- if .Values.certificate.enabled }}
 {{- $ns := .Release.Namespace }}
 {{- /*
-The app's TLS certificate (D71). cert-manager logs in to OpenBao as this namespace's `certs` account through the
+The app's TLS certificate. cert-manager logs in to OpenBao as this namespace's `certs` account through the
 shared role meru-certs and has pki_meru sign <name>.<ns>.svc - OpenBao refuses any name outside this namespace.
 Account, permission and issuer at wave -2, the certificate at -1: the Deployment waits until it's issued.
 */}}

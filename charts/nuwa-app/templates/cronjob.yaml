@@ -2,7 +2,7 @@
 {{- if .Values.autoscaling.enabled }}
 {{- fail "job.schedule and autoscaling don't go together: a CronJob has no replicas to scale" }}
 {{- end }}
-# A scheduled app (D107): one pod per run, the same pod spec as a Deployment minus port and probes. Zabbix watches
+# A scheduled app: one pod per run, the same pod spec as a Deployment minus port and probes. Zabbix watches
 # status.lastSuccessfulTime; a run never overlaps the one before it.
 apiVersion: batch/v1
 kind: CronJob
