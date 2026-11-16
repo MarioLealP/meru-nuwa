@@ -16,3 +16,9 @@ apiServer:
 
 # Where CNPG's operator runs: it reads each instance's status on 8000.
 cnpgNamespace: cnpg-system
+
+# Where every database's WAL archive and base backups go (Meru/garage's S3 API, CNPG's Barman Cloud plugin): the
+# Postgres pods may reach it, nothing else in the namespace.
+backupStore:
+  namespace: garage
+  port: 3900

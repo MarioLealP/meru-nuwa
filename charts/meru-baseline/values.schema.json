@@ -3,7 +3,7 @@
   "title": "meru-baseline values",
   "type": "object",
   "additionalProperties": false,
-  "required": ["databaseClients", "nodeAddress", "apiServer", "cnpgNamespace"],
+  "required": ["databaseClients", "nodeAddress", "apiServer", "cnpgNamespace", "backupStore"],
   "properties": {
     "databaseClients": {
       "type": "array",
@@ -20,6 +20,15 @@
         "port": { "type": "integer" }
       }
     },
-    "cnpgNamespace": { "type": "string" }
+    "cnpgNamespace": { "type": "string" },
+    "backupStore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace", "port"],
+      "properties": {
+        "namespace": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      }
+    }
   }
 }

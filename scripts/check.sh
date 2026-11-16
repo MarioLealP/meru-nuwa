@@ -173,11 +173,12 @@ for values in "$baseline"/ci/*-values.yaml; do
   helm template "$case_name" "$baseline" -n test -f "$values" >"out/$case_name.yaml"
   kubeconform -strict -summary -schema-location default "out/$case_name.yaml"
 done
-echo "== baseline: every pod closed both ways, the database open only on 5432 and its status port"
+echo "== baseline: every pod closed both ways, the database open only on 5432 and its status port, out to the backup store"
 policy=$(helm template b "$baseline" -n test --show-only templates/networkpolicies.yaml)
 for want in '  name: meru-default-deny' '  podSelector: {}' '  policyTypes: \[Ingress, Egress\]' \
   '      - { key: cnpg.io/cluster, operator: Exists }' '        - { protocol: TCP, port: 5432 }' \
-  '        - { protocol: TCP, port: 8000 }' '      app.kubernetes.io/component: migrate'; do
+  '        - { protocol: TCP, port: 8000 }' '      app.kubernetes.io/component: migrate' \
+  '              kubernetes.io/metadata.name: garage' '        - { protocol: TCP, port: 3900 }'; do
   grep -qx "$want" <<<"$policy" || { echo "baseline: missing '$want'" >&2; exit 1; }
 done
 if sed -n '/name: meru-database/,/^---/p' <<<"$policy" | sed -n '/ingress:/,/ports:/p' | grep -q 'namespaceSelector:'; then

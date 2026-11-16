@@ -12,7 +12,8 @@ spec:
 ---
 # The namespace's Postgres (every CNPG pod, its init and join jobs included): reachable on 5432 from the namespace's
 # own pods and from the namespaces listed in databaseClients; its status port from CNPG's operator and the kubelet.
-# Out: DNS and the Kubernetes API (the instance manager reads and writes its Cluster).
+# Out: DNS, the Kubernetes API (the instance manager reads and writes its Cluster) and the backup store (WAL + base
+# backups).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -51,6 +52,12 @@ spec:
             cidr: {{ .Values.apiServer.address }}
       ports:
         - { protocol: TCP, port: {{ .Values.apiServer.port }} }
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.backupStore.namespace }}
+      ports:
+        - { protocol: TCP, port: {{ .Values.backupStore.port }} }
 ---
 # nuwa-app's migration Job (PreSync): DNS and the namespace's own Postgres, nothing else.
 apiVersion: networking.k8s.io/v1
