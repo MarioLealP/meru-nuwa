@@ -2,7 +2,7 @@ apiVersion: v2
 name: meru-baseline
 description: What Meru puts in every app namespace whatever the app's own values say - today, network policies closed by default.
 type: application
-version: 0.1.0
+version: 0.2.0
 home: https://git.clockmost.com/Meru/nuwa
 sources:
   - https://git.clockmost.com/Meru/nuwa

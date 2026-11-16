@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## meru-baseline 0.2.0
+
+### Added
+- `meru-database` lets the Postgres pods out to the backup store (`backupStore`, default Meru/garage's S3 API on
+  3900), so CNPG's Barman Cloud plugin can archive WAL and take base backups under the default deny.
+
 ## nuwa-app 0.32.0
 
 ### Changed (breaking for apps that relied on the defaults)
