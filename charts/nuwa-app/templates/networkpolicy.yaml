@@ -1,8 +1,7 @@
 {{- if .Values.networkPolicy.enabled }}
-# Who may open connections to the app's pods (enforced since 2026-11-01, workspace bead cm-ayc6). Everything not
-# listed is refused - other apps' pods, CI jobs - so an app that trusts a header Caddy sets can't be reached around
-# Caddy from inside the cluster. fromHost: the node (kubelet probes) and, until Caddy and Gitea are pods (D24), Docker's
-# range they come from.
+# Who may open connections to the app's pods, and where they may connect. Everything not listed is refused - other
+# apps' pods, CI jobs, the LAN - so an app that trusts a header Caddy sets can't be reached around Caddy from inside
+# the cluster. fromHost: the node's cni0 address (the kubelet's probes and the host's own services, Caddy included).
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

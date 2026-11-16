@@ -248,20 +248,19 @@ configMaps: []
 #  - name: atlas-live
 #    mountPath: /data/live
 
-# Who may connect to the app (a NetworkPolicy; off = anyone in the cluster). On, only the host side and the
-# namespaces listed get in - other apps' pods and CI jobs don't.
+# Who may connect to the app, and where it may connect (a NetworkPolicy). On by default and closed: only the node gets
+# in, nothing goes out - an app lists what it needs. enabled: false = no policy (anyone in the cluster, anywhere out).
 networkPolicy:
-  enabled: false
+  enabled: true
   fromHost: true
-  # The host side: the node itself (the kubelet's probes, from its cni0 address) and Docker's range - Caddy and
-  # Gitea are still compose containers, and the policy sees their container address (Docker rewrites it only
-  # afterwards). Temporary: once they're pods (D24) this becomes "from namespace caddy / gitea".
-  hostAddresses: [10.42.0.1/32, 172.16.0.0/12]
+  # The host side: the node's cni0 address - the kubelet's probes, and the host's own services (Caddy, Zabbix's
+  # agent), which reach pods from it. An app on a node port that keeps the client's address adds that range.
+  hostAddresses: [10.42.0.1/32]
   fromNamespaces: [] # e.g. [janus] for an app Janus calls
-  # Connections the pods may open: allow = anything (most apps call Thoth, Temporal, OpenBao, ...); none = nothing,
-  # not even DNS - for an app that only answers, like a static site; internet = DNS + public addresses only, never the
-  # LAN, the cluster or the compose networks - for an app that only talks to the internet. Only with enabled.
-  egress: allow
+  # Connections the pods may open: none = nothing, not even DNS (the default - add toNamespaces / toAddresses for what
+  # the app calls; either one also allows DNS); internet = DNS + public addresses only, never the LAN, the cluster or
+  # the host; allow = anything, the LAN and every pod included - avoid. Only with enabled.
+  egress: none
   # With egress none or internet: also the pods of these apps (their namespaces), plus DNS - e.g. [felt-llm] for
   # poe2rag. The other app's policy must let this one in (its fromNamespaces).
   toNamespaces: []

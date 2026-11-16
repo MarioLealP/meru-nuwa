@@ -39,6 +39,23 @@ if ! grep -qx '  policyTypes: \[Ingress, Egress\]' <<<"$policy" || ! grep -qx ' 
   exit 1
 fi
 
+echo "== closed by default: the minimal case gets a policy - only the node in, nothing out"
+policy=$(helm template minimal "$chart" -n test -f "$chart/ci/minimal-values.yaml" --show-only templates/networkpolicy.yaml)
+for want in '  policyTypes: \[Ingress, Egress\]' '  egress: \[\]' '            cidr: 10.42.0.1/32'; do
+  grep -qx "$want" <<<"$policy" || { echo "minimal case: missing '$want'" >&2; exit 1; }
+done
+if grep -q '172.16.0.0/12' <<<"$policy"; then
+  echo "minimal case: Docker's range is no longer a default host address" >&2
+  exit 1
+fi
+echo "== egress allow and enabled false stay possible"
+policy=$(helm template allow "$chart" -n test -f "$chart/ci/egress-allow-values.yaml" --show-only templates/networkpolicy.yaml)
+grep -qx '  policyTypes: \[Ingress\]' <<<"$policy" || { echo "egress-allow case: expected Ingress only" >&2; exit 1; }
+if grep -q '^kind: NetworkPolicy$' "out/no-policy.yaml"; then
+  echo "no-policy case: rendered a NetworkPolicy" >&2
+  exit 1
+fi
+
 echo "== egress internet: DNS to CoreDNS, then public addresses only"
 policy=$(helm template internet "$chart" -n test -f "$chart/ci/internet-values.yaml" --show-only templates/networkpolicy.yaml)
 for want in '  policyTypes: \[Ingress, Egress\]' '              k8s-app: kube-dns' '            cidr: 0.0.0.0/0' \
