@@ -234,7 +234,8 @@ tmp:
 # Reloader skips it). For an app where a restart costs something, like Warpgate's open sessions.
 reloadsSecrets: false
 
-# Persistent volumes. storageClass: local (SSD, default) or hdd. Any volume switches rollouts to Recreate.
+# Persistent volumes. storageClass: local (SSD, default), hdd (the backup HDD: re-fetchable bulk) or bulk (the 1 TB
+# data HDD: big data that must be kept, backed up). Any volume switches rollouts to Recreate.
 persistence: []
 #  - name: data
 #    mountPath: /data

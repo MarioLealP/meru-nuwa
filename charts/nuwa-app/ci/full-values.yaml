@@ -78,6 +78,10 @@ persistence:
     mountPath: /archive
     size: 10Gi
     storageClass: hdd
+  - name: files
+    mountPath: /files
+    size: 50Gi
+    storageClass: bulk
 otel:
   endpoint: http://openobserve.example:5081/api/default
 glitchtip:

@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## nuwa-app 0.33.0
+
+### Added
+- `persistence[].storageClass: bulk` - the 1 TB data HDD (`/srv/data/k8s/<namespace>/<volume>/`, LUKS, in the backup
+  tier): big, slow-is-fine data that must be kept, like Nextcloud's files. Databases stay on `local`.
+
 ## meru-baseline 0.2.0
 
 ### Added
