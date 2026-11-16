@@ -146,3 +146,24 @@ if helm template minimal "$chart" -n test -f "$chart/ci/minimal-values.yaml" --s
   echo "reloadsSecrets off: the Deployment must not opt out of Reloader" >&2
   exit 1
 fi
+
+# meru-baseline: the network policies Meru puts in every app namespace.
+baseline=charts/meru-baseline
+for values in "$baseline"/ci/*-values.yaml; do
+  case_name="baseline-$(basename "$values" -values.yaml)"
+  echo "== $case_name"
+  helm lint --strict "$baseline" -f "$values" --quiet
+  helm template "$case_name" "$baseline" -n test -f "$values" >"out/$case_name.yaml"
+  kubeconform -strict -summary -schema-location default "out/$case_name.yaml"
+done
+echo "== baseline: every pod closed both ways, the database open only on 5432 and its status port"
+policy=$(helm template b "$baseline" -n test --show-only templates/networkpolicies.yaml)
+for want in '  name: meru-default-deny' '  podSelector: {}' '  policyTypes: \[Ingress, Egress\]' \
+  '      - { key: cnpg.io/cluster, operator: Exists }' '        - { protocol: TCP, port: 5432 }' \
+  '        - { protocol: TCP, port: 8000 }' '      app.kubernetes.io/component: migrate'; do
+  grep -qx "$want" <<<"$policy" || { echo "baseline: missing '$want'" >&2; exit 1; }
+done
+if sed -n '/name: meru-database/,/^---/p' <<<"$policy" | sed -n '/ingress:/,/ports:/p' | grep -q 'namespaceSelector:'; then
+  echo "baseline: no databaseClients set, but the database lets another namespace in" >&2
+  exit 1
+fi

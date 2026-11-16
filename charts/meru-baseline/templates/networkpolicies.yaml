@@ -1,0 +1,74 @@
+# Every pod in the namespace starts closed: no connections in, none out. NetworkPolicies add up, so the app's own
+# policy (nuwa-app) and the two below are what open it - an app that turns its own policy off stays closed.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: meru-default-deny
+  labels:
+    {{- include "meru-baseline.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+# The namespace's Postgres (every CNPG pod, its init and join jobs included): reachable on 5432 from the namespace's
+# own pods and from the namespaces listed in databaseClients; its status port from CNPG's operator and the kubelet.
+# Out: DNS and the Kubernetes API (the instance manager reads and writes its Cluster).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: meru-database
+  labels:
+    {{- include "meru-baseline.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchExpressions:
+      - { key: cnpg.io/cluster, operator: Exists }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector: {}
+        {{- with .Values.databaseClients }}
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values: {{ toJson . }}
+        {{- end }}
+      ports:
+        - { protocol: TCP, port: 5432 }
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.cnpgNamespace }}
+        - ipBlock:
+            cidr: {{ .Values.nodeAddress }}
+      ports:
+        - { protocol: TCP, port: 8000 }
+  egress:
+    {{- include "meru-baseline.dns" . | nindent 4 }}
+    - to:
+        - ipBlock:
+            cidr: {{ .Values.apiServer.address }}
+      ports:
+        - { protocol: TCP, port: {{ .Values.apiServer.port }} }
+---
+# nuwa-app's migration Job (PreSync): DNS and the namespace's own Postgres, nothing else.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: meru-migrate
+  labels:
+    {{- include "meru-baseline.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: migrate
+  policyTypes: [Egress]
+  egress:
+    {{- include "meru-baseline.dns" . | nindent 4 }}
+    - to:
+        - podSelector:
+            matchExpressions:
+              - { key: cnpg.io/cluster, operator: Exists }
+      ports:
+        - { protocol: TCP, port: 5432 }

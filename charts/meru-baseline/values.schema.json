@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "meru-baseline values",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["databaseClients", "nodeAddress", "apiServer", "cnpgNamespace"],
+  "properties": {
+    "databaseClients": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z]([-a-z0-9]{0,61}[a-z0-9])?$" },
+      "uniqueItems": true
+    },
+    "nodeAddress": { "type": "string", "pattern": "^[0-9.]+/[0-9]+$" },
+    "apiServer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["address", "port"],
+      "properties": {
+        "address": { "type": "string", "pattern": "^[0-9.]+/[0-9]+$" },
+        "port": { "type": "integer" }
+      }
+    },
+    "cnpgNamespace": { "type": "string" }
+  }
+}

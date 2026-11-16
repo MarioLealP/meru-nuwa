@@ -1,0 +1,18 @@
+# meru-baseline: rendered by Meru's ApplicationSets into every app namespace (and environment namespace), next to the
+# app's own nuwa-app release. The platform pins its version, not the app, and the app's values never reach it.
+
+# Other apps' namespaces whose pods may reach this namespace's Postgres (CNPG) on 5432, e.g. [zabbix-web] for
+# zabbix's database. From deploy/meru.yaml `databaseClients`. The namespace's own pods always may.
+databaseClients: []
+
+# The node's cni0 address: the kubelet's probes come from it.
+nodeAddress: 10.42.0.1/32
+
+# The Kubernetes API as a pod's packets carry it: kube-proxy rewrites kubernetes.default.svc to the node's own address
+# before a NetworkPolicy sees it. CNPG's instance manager talks to it.
+apiServer:
+  address: 192.168.10.110/32
+  port: 6443
+
+# Where CNPG's operator runs: it reads each instance's status on 8000.
+cnpgNamespace: cnpg-system
