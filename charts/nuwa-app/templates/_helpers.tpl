@@ -4,7 +4,7 @@ app.kubernetes.io/name: {{ .Values.name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
-{{/* Every resource carries these: the selector pair plus Meru's CMDB labels (compliance rule 7). */}}
+{{/* Every resource carries these: the selector pair plus Meru's CMDB labels (owner, part-of), which Thoth and Rancher read. */}}
 {{- define "nuwa-app.labels" -}}
 {{ include "nuwa-app.selectorLabels" . }}
 app.kubernetes.io/part-of: {{ .Values.partOf }}
@@ -13,7 +13,7 @@ meru.clockmost.com/owner: {{ .Values.owner }}
 helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- end }}
 
-{{/* A pod's labels: the selector pair plus the CMDB labels rule 7 asks of pods - no chart version, so a chart bump
+{{/* A pod's labels: the selector pair plus the CMDB labels - no chart version, so a chart bump
 alone never changes the pod template (and never restarts every app). */}}
 {{- define "nuwa-app.podLabels" -}}
 {{ include "nuwa-app.selectorLabels" . }}
@@ -21,7 +21,7 @@ app.kubernetes.io/part-of: {{ .Values.partOf }}
 meru.clockmost.com/owner: {{ .Values.owner }}
 {{- end }}
 
-{{/* repository[:tag]@digest - the digest decides what runs (rule 1), the tag is for people. */}}
+{{/* repository[:tag]@digest - the digest decides what runs, the tag is for people. */}}
 {{- define "nuwa-app.image" -}}
 {{ include "nuwa-app.imageRef" .Values.image }}
 {{- end }}
@@ -33,7 +33,7 @@ meru.clockmost.com/owner: {{ .Values.owner }}
 
 {{/* Whether the workload (Deployment, migration Job, ScaledObject) renders. Not until CI's first build - the digest is
 the template's all-zero placeholder, which can't be pulled, and Argo CD would keep retrying that revision
-instead of taking the build's digest commit - and not once the app is retired (`enabled: false`, D84: Shikigami's last
+instead of taking the build's digest commit - and not once the app is retired (`enabled: false`, Shikigami's last
 commit before it archives the repo; the pods stop on the next sync). Everything else (Service, volumes, secrets, ...)
 renders either way, until Charon purges the namespace. */}}
 {{- define "nuwa-app.runs" -}}
@@ -63,7 +63,7 @@ helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
 {{- end }}
 
 {{/* The pod spec the Deployment and the CronJob share (job.schedule set = a CronJob: no port, no probes - a job
-runs to its end, rule 6 checks long-running workloads only). Every other rule holds for both. */}}
+runs to its end, so only long-running workloads get probes). Everything else is the same for both. */}}
 {{- /* What a probe does: an HTTP GET on the heartbeat path, or with heartbeat.scheme TCP only a TCP connect (for an app
 with no HTTP at all, e.g. a game server). On the health port when heartbeat.port is set, else on the app's port. With
 heartbeat.scheme EXEC a command in the app container (heartbeat.exec), for an app whose health has no port at all. */}}
@@ -101,7 +101,7 @@ terminationGracePeriodSeconds: {{ . }}
 {{- with .Values.runtimeClassName }}
 runtimeClassName: {{ . }}
 {{- end }}
-# Pod Security "restricted" (rule 4), spelled out so the pod passes it whatever the image does.
+# Pod Security "restricted", spelled out so the pod passes it whatever the image does.
 securityContext:
   runAsNonRoot: true
   runAsUser: {{ .Values.runAsUser }}

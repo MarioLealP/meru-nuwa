@@ -4,7 +4,7 @@
 {{- fail "autoscaling.minReplicas is above maxReplicas" }}
 {{- end }}
 {{- end }}
-# KEDA scales the Deployment on the app's own backlog (D75): it polls the app's Service inside the cluster and drives
+# KEDA scales the Deployment on the app's own backlog: it polls the app's Service inside the cluster and drives
 # an HPA it creates. The Deployment leaves `replicas` out, so Argo CD and the HPA don't fight over it.
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject

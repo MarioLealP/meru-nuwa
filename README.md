@@ -1,4 +1,4 @@
-# Nüwa
+# Nüwa - app templates
 
 The app templates of **Meru**, a small in-house container platform (CaaS) on k3s. Nüwa holds `nuwa-app`, the
 Helm chart every Meru app is deployed with: an app repo carries only a `deploy/values.yaml`, and the chart turns it
