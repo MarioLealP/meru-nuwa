@@ -1,0 +1,47 @@
+# Meru/nuwa's CI: scripts/check.sh - lint and render both charts with every ci/ case, validate the output, and the
+# behaviour checks - on every pull request and on main. It runs on this repo's check-only Sindri runner (namespace
+# nuwa-build, sindri-build build: false, Meru/meru platform/meru-ci.yaml): the job has no service account token, no
+# OpenBao login and no keys.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  HELM_VERSION: v4.3.2
+  HELM_SHA256: d1c0278d46beab79582d7e50f5b3dc206944ba8e577cde618513fd07daa53983
+  KUBECONFORM_VERSION: v0.8.0
+  KUBECONFORM_SHA256: 9bc2bffbf71f261128533edaf912153948b7ff238f9a531ae6d34466ec287883
+
+jobs:
+  checks:
+    runs-on: sindri-check # python 3.15 + uv + git (the runner's only label)
+    env:
+      HOME: /tmp
+    steps:
+      - name: checkout
+        run: |
+          git config --global --add safe.directory "$PWD" # the workspace volume isn't owned by the job's user
+          git init --quiet .
+          git remote add origin "https://sindri:${{ gitea.token }}@git.clockmost.com/${{ gitea.repository }}.git"
+          git fetch --quiet --depth 1 origin "${{ gitea.ref }}" # a PR's commit lives under refs/pull/<n>/...
+          git checkout --quiet -B work FETCH_HEAD
+
+      - name: tools
+        # Pinned by version and sha256; python's urllib, so the image needs no curl or wget.
+        run: |
+          mkdir -p /tmp/bin /tmp/dl
+          fetch() { # url sha256 file
+            python3 -I -c 'import sys, urllib.request; urllib.request.urlretrieve(sys.argv[1], sys.argv[2])' "$1" "/tmp/dl/$3"
+            echo "$2  /tmp/dl/$3" | sha256sum -c --quiet
+            tar -xzf "/tmp/dl/$3" -C /tmp/dl
+          }
+          fetch "https://get.helm.sh/helm-$HELM_VERSION-linux-amd64.tar.gz" "$HELM_SHA256" helm.tgz
+          fetch "https://github.com/yannh/kubeconform/releases/download/$KUBECONFORM_VERSION/kubeconform-linux-amd64.tar.gz" \
+            "$KUBECONFORM_SHA256" kubeconform.tgz
+          install -m 755 /tmp/dl/linux-amd64/helm /tmp/dl/kubeconform /tmp/bin/
+
+      - name: checks
+        run: PATH=/tmp/bin:$PATH bash scripts/check.sh
