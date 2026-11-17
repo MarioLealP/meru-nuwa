@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Fixed
+- `values.yaml` comments for `extraPorts` and `nodePorts` said NodePort traffic arrives from the node's address. The
+  NetworkPolicy sees the client's address, firewalld does not gate NodePorts, and an `extraPorts` Service gives its HTTP
+  port a random NodePort too. Comments only; no chart version change.
+
 ## nuwa-app 0.33.0
 
 ### Added
