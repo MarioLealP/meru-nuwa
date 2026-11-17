@@ -40,8 +40,9 @@ runtimeClassName: ""
 # Meru apps find each other by DNS, and the vars collide with app settings (Immich's IMMICH_PORT crash-looped it).
 serviceLinks: false
 # Ports that aren't the app's HTTP, reached from outside the cluster on the node (Caddy only forwards HTTP). Any entry
-# makes the Service a NodePort, and the node's firewall still has to let it in. The port's traffic reaches the pod from
-# the node's address, so a networkPolicy needs fromHost.
+# makes the whole Service a NodePort, so its HTTP port gets a random NodePort too. firewalld does not gate NodePorts
+# (the DNAT'd traffic is accepted before its rules). The NetworkPolicy sees the real client address, not the node's:
+# add the clients' range to networkPolicy.hostAddresses (fromHost alone only admits the node).
 extraPorts: []
 #  - name: ssh
 #    port: 2222
@@ -57,8 +58,8 @@ servicePorts: []
 # Ports on the node for players and other non-HTTP clients, TCP or UDP, in a Service of their own (<name>-ports): the
 # app's own Service stays ClusterIP, so its other ports (e.g. a game's RCON) are never on the node. targetPort: the
 # port is the app's main one (port above) - no extra container port; otherwise a container port named <name> is added.
-# The node's firewall still has to let it in; the traffic reaches the pod from the node's address (networkPolicy
-# fromHost). New apps use this; extraPorts stays as it is for the apps on it (Warpgate's SSH).
+# firewalld does not gate NodePorts, and the NetworkPolicy sees the real client address, not the node's: add the
+# clients' range to networkPolicy.hostAddresses. New apps use this; extraPorts stays as it is for the apps on it (Warpgate's SSH).
 nodePorts: []
 #  - name: game
 #    port: 34197
