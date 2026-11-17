@@ -87,6 +87,20 @@
       "minimumReleaseAge": "0 days"
     },
     {
+      "description": "The shared files template (Meru/nuwa-base, applied with copier; .copier-answers.meru.yml) on its own PR, at any time and without the 7-day wait: our own release, and git tags carry no release date for the wait to read.",
+      "matchManagers": [
+        "copier"
+      ],
+      "groupName": "nuwa-base files",
+      "addLabels": [
+        "template"
+      ],
+      "minimumReleaseAge": "0 days",
+      "schedule": [
+        "at any time"
+      ]
+    },
+    {
       "description": "Majors one PR each, marked for a closer look.",
       "matchUpdateTypes": [
         "major"
