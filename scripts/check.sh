@@ -6,6 +6,14 @@ cd "$(dirname "$0")/.."
 chart=charts/nuwa-app
 rm -rf out && mkdir -p out
 
+echo "== release: every chart's version has a CHANGELOG entry (the tag is pushed after merge from that entry)"
+for chart_dir in charts/*/; do
+  name=$(sed -n 's/^name: *//p' "${chart_dir}Chart.yaml")
+  version=$(sed -n 's/^version: *//p' "${chart_dir}Chart.yaml")
+  grep -qx "## $name $version" CHANGELOG.md ||
+    { echo "$name $version: no '## $name $version' heading in CHANGELOG.md (add it, then tag $name-$version after merge)" >&2; exit 1; }
+done
+
 for values in "$chart"/ci/*-values.yaml; do
   case_name="$(basename "$values" -values.yaml)"
   echo "== $case_name"
